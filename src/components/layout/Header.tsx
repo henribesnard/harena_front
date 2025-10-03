@@ -1,59 +1,131 @@
-import { Search, Bell, Menu, User } from 'lucide-react'
+import { Menu, User, LogOut, ChevronDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { useAuthStore } from '../../stores/authStore'
 
 interface HeaderProps {
   onMenuClick: () => void
 }
 
 const Header = ({ onMenuClick }: HeaderProps) => {
+  const { user, logout } = useAuthStore()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Debug log
+  console.log('Header - user:', user)
+
+  // Compute full_name
+  const getFullName = () => {
+    if (!user) return 'Utilisateur'
+
+    if (user.full_name) return user.full_name
+
+    const firstName = user.first_name || ''
+    const lastName = user.last_name || ''
+
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`
+    } else if (firstName) {
+      return firstName
+    } else if (lastName) {
+      return lastName
+    } else {
+      return user.email?.split('@')[0] || 'Utilisateur'
+    }
+  }
+
+  const fullName = getFullName()
+  console.log('Header - fullName:', fullName)
+
+  // Fermer le dropdown si on clique en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    window.location.href = '/login'
+  }
+
+  // Obtenir les initiales de l'utilisateur
+  const getInitials = (name: string | undefined) => {
+    if (!name) return 'U'
+    const parts = name.split(' ')
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+  }
+
   return (
-    <header className="sticky top-0 z-50 h-20 bg-gradient-primary shadow-lg">
+    <header className="sticky top-0 z-50 h-16 bg-white border-b border-gray-200 shadow-sm">
       <div className="h-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-full">
-          {/* Left: Logo + Menu */}
+          {/* Left: Menu + Logo */}
           <div className="flex items-center space-x-4">
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-md text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
 
-            <Link to="/dashboard" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary-600">H</span>
+            <Link to="/chat" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <span className="text-lg font-bold text-white">H</span>
               </div>
-              <span className="text-2xl font-bold text-white hidden sm:block">
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent hidden sm:block">
                 Harena
               </span>
             </Link>
           </div>
 
-          {/* Center: Search Bar (Desktop) */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher des transactions..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-white/60 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Right: Notifications + User */}
-          <div className="flex items-center space-x-4">
-            <button className="relative p-2 rounded-full text-white hover:bg-white/10 transition-colors">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-danger-main rounded-full"></span>
-            </button>
-
-            <button className="flex items-center space-x-2 p-2 rounded-lg text-white hover:bg-white/10 transition-colors">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-primary-600" />
+          {/* Right: User Menu */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center space-x-2 p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-white">
+                  {getInitials(fullName)}
+                </span>
               </div>
-              <span className="hidden sm:block font-medium">John Doe</span>
+              <span className="hidden sm:block font-medium text-sm">
+                {fullName}
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
+
+            {/* Dropdown Menu */}
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+                {/* User Info */}
+                <div className="px-4 py-3 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">{fullName}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
+                </div>
+
+                {/* Menu Items */}
+                <div className="py-1">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Se déconnecter</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
