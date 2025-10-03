@@ -41,46 +41,70 @@ const ChatPage = () => {
     }
 
     setMessages(prev => [...prev, userMessage])
+    const currentInput = input
     setInput('')
     setIsLoading(true)
 
+    // Create placeholder for assistant message
+    const assistantMessageId = (Date.now() + 1).toString()
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    }
+    setMessages(prev => [...prev, assistantMessage])
+
     try {
-      const response = await api.conversation.sendMessage(
+      let accumulatedContent = ''
+
+      await api.conversation.sendMessageStream(
         token,
         userId,
-        input,
-        conversationId
+        currentInput,
+        conversationId,
+        // onChunk - append text as it arrives
+        (chunk: string) => {
+          accumulatedContent += chunk
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: accumulatedContent }
+                : msg
+            )
+          )
+        },
+        // onStatus - could show status updates
+        (status: string) => {
+          console.log('Status:', status)
+        },
+        // onError
+        (error: string) => {
+          console.error('Stream error:', error)
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: error || 'Une erreur est survenue.' }
+                : msg
+            )
+          )
+        },
+        // onComplete
+        () => {
+          console.log('Stream complete')
+          setIsLoading(false)
+        }
       )
 
-      if (!conversationId && response.conversation_id) {
-        setConversationId(response.conversation_id)
-      }
-
-      // Extract message from response structure
-      let messageContent = 'Désolé, je n\'ai pas pu traiter votre demande.'
-      if (response.response && response.response.message) {
-        messageContent = response.response.message
-      } else if (response.message) {
-        messageContent = response.message
-      }
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: messageContent,
-        timestamp: new Date(),
-      }
-
-      setMessages(prev => [...prev, assistantMessage])
     } catch (error) {
       console.error('Error sending message:', error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'Une erreur est survenue. Veuillez réessayer.',
-        timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: 'Une erreur est survenue. Veuillez réessayer.' }
+            : msg
+        )
+      )
     } finally {
       setIsLoading(false)
     }
