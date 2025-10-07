@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2 } from 'lucide-react'
 import { api } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
+import ConversationSidebar from '../../components/chat/ConversationSidebar'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Message {
   id: string
@@ -13,10 +15,11 @@ interface Message {
 const ChatPage = () => {
   const token = useAuthStore((state) => state.token)
   const userId = useAuthStore((state) => state.user?.id)
+  const queryClient = useQueryClient()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [conversationId, setConversationId] = useState<string | undefined>()
+  const [conversationId, setConversationId] = useState<number | undefined>()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -26,6 +29,51 @@ const ChatPage = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const handleNewConversation = () => {
+    setMessages([])
+    setConversationId(undefined)
+  }
+
+  const handleSelectConversation = async (convId: number) => {
+    if (!token) return
+
+    setConversationId(convId)
+    setIsLoading(true)
+
+    try {
+      console.log('Loading conversation:', convId)
+      const data = await api.conversation.getConversation(token, convId)
+      console.log('Conversation data:', data)
+
+      // Convertir les tours en messages
+      const loadedMessages: Message[] = []
+      for (const turn of data.turns) {
+        loadedMessages.push({
+          id: `${turn.id}-user`,
+          role: 'user',
+          content: turn.user_message,
+          timestamp: new Date(turn.created_at)
+        })
+        loadedMessages.push({
+          id: `${turn.id}-assistant`,
+          role: 'assistant',
+          content: turn.assistant_response,
+          timestamp: new Date(turn.created_at)
+        })
+      }
+
+      console.log('Loaded messages:', loadedMessages)
+      setMessages(loadedMessages)
+    } catch (error) {
+      console.error('Error loading conversation:', error)
+      setMessages([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Pas besoin d'useEffect ici, on invalidera directement après l'envoi du message
 
   const handleSend = async () => {
     if (!input.trim() || isLoading || !token || !userId) return
@@ -62,7 +110,7 @@ const ChatPage = () => {
         token,
         userId,
         currentInput,
-        conversationId,
+        conversationId?.toString(),
         // onChunk - append text as it arrives
         (chunk: string) => {
           accumulatedContent += chunk
@@ -93,6 +141,9 @@ const ChatPage = () => {
         () => {
           console.log('Stream complete')
           setIsLoading(false)
+          // Invalider le cache des conversations pour mettre à jour la sidebar
+          console.log('Invalidating conversation history cache...')
+          queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
         }
       )
 
@@ -105,6 +156,8 @@ const ChatPage = () => {
             : msg
         )
       )
+      // Invalider le cache même en cas d'erreur
+      queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
     } finally {
       setIsLoading(false)
     }
@@ -118,9 +171,18 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-4xl mx-auto">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+    <div className="flex h-full">
+      {/* Conversation Sidebar */}
+      <ConversationSidebar
+        currentConversationId={conversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewConversation={handleNewConversation}
+      />
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col w-full">
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
@@ -174,10 +236,10 @@ const ChatPage = () => {
             <div ref={messagesEndRef} />
           </>
         )}
-      </div>
+        </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white px-4 py-4">
+        {/* Input Area */}
+        <div className="border-t border-gray-200 bg-white px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-end space-x-2">
           <div className="flex-1 relative">
             <textarea
@@ -201,6 +263,7 @@ const ChatPage = () => {
               <Send className="w-5 h-5" />
             )}
           </button>
+        </div>
         </div>
       </div>
     </div>

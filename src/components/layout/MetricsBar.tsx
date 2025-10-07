@@ -1,24 +1,21 @@
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PiggyBank, AlertTriangle } from 'lucide-react'
-import { useFinancialMetrics } from '../../hooks/useMetrics'
-import { useAuthStore } from '../../stores/authStore'
+import { Calendar, CalendarDays, ArrowUpRight, ArrowDownRight, Shield, CreditCard, Banknote } from 'lucide-react'
+import { useCoreMetrics } from '../../hooks/useCoreMetrics'
 
 const MetricsBar = () => {
-  const userId = useAuthStore((state) => state.user?.id)
-  const { mom, savingsRate, burnRate } = useFinancialMetrics(userId || 0)
+  const { yoyExpenses, momExpenses, yoyIncome, momIncome, coverage } = useCoreMetrics()
+
+  // Debug coverage
+  console.log('Coverage data:', coverage.data, 'Error:', coverage.error, 'Loading:', coverage.isLoading)
 
   // Show loading if any metric is loading
-  const isLoading = mom.isLoading || savingsRate.isLoading || burnRate.isLoading
+  const isLoading = yoyExpenses.isLoading || momExpenses.isLoading || yoyIncome.isLoading || momIncome.isLoading || coverage.isLoading
 
-  // Check for errors
-  console.log('MetricsBar - userId:', userId)
-  console.log('MetricsBar - mom:', { isLoading: mom.isLoading, error: mom.error, data: mom.data })
-  console.log('MetricsBar - savingsRate:', { isLoading: savingsRate.isLoading, error: savingsRate.error, data: savingsRate.data })
-  console.log('MetricsBar - burnRate:', { isLoading: burnRate.isLoading, error: burnRate.error, data: burnRate.data })
-
-  if (!userId || isLoading) {
+  if (isLoading) {
     return (
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-3 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto">
+          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
+          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
           <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
           <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
           <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
@@ -36,95 +33,149 @@ const MetricsBar = () => {
     }).format(amount)
   }
 
-  const EvolutionBadge = ({ percent }: { percent: number }) => {
-    const isPositive = percent >= 0
-    const Icon = isPositive ? ArrowUpRight : ArrowDownRight
-    const colorClass = isPositive ? 'text-green-600 bg-white/90' : 'text-red-600 bg-white/90'
+  const EvolutionBadgeExpenses = ({ couleur, direction, percent }: { couleur: string; direction: 'up' | 'down' | 'stable'; percent: number }) => {
+    // Pour les dépenses (après fix backend):
+    // - Si percent < 0 (diminution) => vert (positif) + flèche down
+    // - Si percent > 0 (augmentation) => rouge (négatif) + flèche up
+    const Icon = direction === 'down' ? ArrowDownRight : direction === 'up' ? ArrowUpRight : null
+    const colorClass = couleur === 'green' ? 'text-green-600 bg-white/90' : couleur === 'red' ? 'text-red-600 bg-white/90' : 'text-gray-600 bg-white/90'
 
     return (
       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
-        <Icon className="w-3 h-3 mr-0.5" />
-        {Math.abs(percent).toFixed(1)}%
+        {Icon && <Icon className="w-3 h-3 mr-0.5" />}
+        {percent >= 0 ? '+' : ''}{percent.toFixed(1)}%
       </span>
     )
   }
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'low': return 'text-green-400'
-      case 'medium': return 'text-yellow-400'
-      case 'high': return 'text-orange-400'
-      case 'critical': return 'text-red-400'
-      default: return 'text-gray-400'
-    }
+  const EvolutionBadgeIncome = ({ couleur, direction, percent }: { couleur: string; direction: 'up' | 'down' | 'stable'; percent: number }) => {
+    // Pour les revenus (après fix backend):
+    // - Si percent > 0 (augmentation) => vert (positif) + flèche up
+    // - Si percent < 0 (diminution) => rouge (négatif) + flèche down
+    const Icon = direction === 'up' ? ArrowUpRight : direction === 'down' ? ArrowDownRight : null
+    const colorClass = couleur === 'green' ? 'text-green-600 bg-white/90' : couleur === 'red' ? 'text-red-600 bg-white/90' : 'text-gray-600 bg-white/90'
+
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
+        {Icon && <Icon className="w-3 h-3 mr-0.5" />}
+        {percent >= 0 ? '+' : ''}{percent.toFixed(1)}%
+      </span>
+    )
   }
 
-  const getHealthColor = (status: string) => {
-    switch (status) {
-      case 'excellent': return 'text-green-400'
-      case 'good': return 'text-blue-400'
-      case 'fair': return 'text-yellow-400'
-      case 'poor': return 'text-red-400'
-      default: return 'text-gray-400'
-    }
+  const getCoverageColor = (taux: number) => {
+    if (taux >= 20) return 'text-green-400'
+    if (taux >= 10) return 'text-green-300'
+    if (taux >= 5) return 'text-yellow-300'
+    if (taux >= 0) return 'text-orange-400'
+    return 'text-red-400'
   }
 
   return (
     <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-3 shadow-lg">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-4 overflow-x-auto">
 
-          {/* MoM Evolution */}
-          {mom.data && (
-            <div className="flex items-center space-x-2">
-              <TrendingDown className="w-5 h-5 text-white/80" />
+          {/* YoY Expenses */}
+          {yoyExpenses.data && (
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Calendar className="w-5 h-5 text-white/80" />
               <div>
-                <p className="text-xs text-white/70 font-medium">Dépenses (MoM)</p>
+                <p className="text-xs text-white/70 font-medium">📅 Dépenses (YoY)</p>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-bold text-white font-mono">
-                    {formatCurrency(mom.data.data.current_amount)}
+                    {formatCurrency(yoyExpenses.data.periode_cible.total)}
                   </span>
-                  <EvolutionBadge percent={mom.data.data.change_percent} />
+                  <EvolutionBadgeExpenses
+                    couleur={yoyExpenses.data.affichage.couleur}
+                    percent={yoyExpenses.data.variation.pourcentage}
+                    direction={yoyExpenses.data.variation.direction}
+                  />
                 </div>
               </div>
             </div>
           )}
 
-          {/* Savings Rate */}
-          {savingsRate.data && (
-            <div className="flex items-center space-x-2">
-              <PiggyBank className={`w-5 h-5 ${getHealthColor(savingsRate.data.data.health_status)}`} />
+          {/* MoM Expenses */}
+          {momExpenses.data && (
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <CalendarDays className="w-5 h-5 text-white/80" />
               <div>
-                <p className="text-xs text-white/70 font-medium">Taux d'Épargne</p>
+                <p className="text-xs text-white/70 font-medium">📆 Dépenses (MoM)</p>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-bold text-white font-mono">
-                    {savingsRate.data.data.savings_rate.toFixed(1)}%
+                    {formatCurrency(momExpenses.data.periode_cible.total)}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full bg-white/20 ${getHealthColor(savingsRate.data.data.health_status)}`}>
-                    {savingsRate.data.data.health_status}
-                  </span>
+                  <EvolutionBadgeExpenses
+                    couleur={momExpenses.data.affichage.couleur}
+                    percent={momExpenses.data.variation.pourcentage}
+                    direction={momExpenses.data.variation.direction}
+                  />
                 </div>
               </div>
             </div>
           )}
 
-          {/* Burn Rate & Runway */}
-          {burnRate.data && (
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className={`w-5 h-5 ${getRiskColor(burnRate.data.data.risk_level)}`} />
+          {/* YoY Income */}
+          {yoyIncome.data && (
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Banknote className="w-5 h-5 text-white/80" />
               <div>
-                <p className="text-xs text-white/70 font-medium">Autonomie</p>
+                <p className="text-xs text-white/70 font-medium">💰 Revenus (YoY)</p>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-bold text-white font-mono">
-                    {burnRate.data.data.runway_months !== null
-                      ? `${burnRate.data.data.runway_months} mois`
-                      : 'Illimitée'
-                    }
+                    {formatCurrency(yoyIncome.data.periode_cible.total)}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full bg-white/20 ${getRiskColor(burnRate.data.data.risk_level)}`}>
-                    {burnRate.data.data.risk_level}
-                  </span>
+                  <EvolutionBadgeIncome
+                    couleur={yoyIncome.data.affichage.couleur}
+                    percent={yoyIncome.data.variation.pourcentage}
+                    direction={yoyIncome.data.variation.direction}
+                  />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* MoM Income */}
+          {momIncome.data && (
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <CreditCard className="w-5 h-5 text-white/80" />
+              <div>
+                <p className="text-xs text-white/70 font-medium">💳 Revenus (MoM)</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-bold text-white font-mono">
+                    {formatCurrency(momIncome.data.periode_cible.total)}
+                  </span>
+                  <EvolutionBadgeIncome
+                    couleur={momIncome.data.affichage.couleur}
+                    percent={momIncome.data.variation.pourcentage}
+                    direction={momIncome.data.variation.direction}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Coverage Rate */}
+          {!coverage.isLoading && (
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Shield className={`w-5 h-5 ${coverage.data ? getCoverageColor(coverage.data.taux_couverture) : 'text-white/80'}`} />
+              <div>
+                <p className="text-xs text-white/70 font-medium">🛡️ Taux de Couverture</p>
+                {coverage.data ? (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-bold text-white font-mono">
+                      {coverage.data.taux_couverture.toFixed(1)}%
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full bg-white/20 ${getCoverageColor(coverage.data.taux_couverture)}`}>
+                      {coverage.data.affichage.niveau || 'N/A'}
+                    </span>
+                  </div>
+                ) : coverage.error ? (
+                  <span className="text-xs text-red-300">Erreur</span>
+                ) : (
+                  <span className="text-xs text-white/60">Aucune donnée</span>
+                )}
               </div>
             </div>
           )}
