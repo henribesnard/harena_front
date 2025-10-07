@@ -120,9 +120,9 @@ export const api = {
       return response.json()
     },
 
-    getConversation: async (token: string, conversationId: string) => {
+    getConversation: async (token: string, conversationId: number) => {
       const response = await fetch(
-        `${API_BASE_URL}${API_V1}/conversation/${conversationId}`,
+        `${API_BASE_URL}${API_V1}/conversation/conversation/${conversationId}/turns`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
