@@ -43,7 +43,8 @@ export const api = {
       onChunk: (chunk: string) => void,
       onStatus: (status: string) => void,
       onError: (error: string) => void,
-      onComplete: () => void
+      onComplete: () => void,
+      onConversationId?: (convId: number) => void
     ) => {
       const response = await fetch(`${API_BASE_URL}${API_V1}/conversation/${userId}/stream`, {
         method: 'POST',
@@ -88,6 +89,11 @@ export const api = {
                   onChunk(parsed.content || '')
                 } else if (parsed.type === 'response_start') {
                   // Ignore, juste le début du streaming
+                } else if (parsed.type === 'conversation_id') {
+                  // Capturer le conversation_id envoyé par le backend
+                  if (onConversationId && parsed.conversation_id) {
+                    onConversationId(parsed.conversation_id)
+                  }
                 } else if (parsed.type === 'response_end') {
                   onComplete()
                   break

@@ -144,6 +144,11 @@ const ChatPage = () => {
           // Invalider le cache des conversations pour mettre à jour la sidebar
           console.log('Invalidating conversation history cache...')
           queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
+        },
+        // onConversationId - récupérer l'ID de la conversation créée/utilisée
+        (convId: number) => {
+          console.log('Received conversation_id:', convId)
+          setConversationId(convId)
         }
       )
 
