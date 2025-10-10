@@ -49,7 +49,7 @@ export const MetricCard = ({
   isCurrency = false,
   isPercentage = false,
   loading = false
-}) => {
+}: MetricCardProps) => {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6">

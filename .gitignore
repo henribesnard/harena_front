@@ -29,3 +29,8 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+# Deployment files
+.env.production
+deploy-to-s3.sh
+DEPLOYMENT.md
+*.bak
