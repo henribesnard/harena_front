@@ -11,7 +11,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
-    open: true,
+    host: true, // Écouter sur toutes les interfaces (nécessaire pour Docker)
+    port: 5173,
+    strictPort: true,
+    watch: {
+      usePolling: true, // Nécessaire pour hot reload dans Docker (Windows/Mac)
+    },
+    hmr: {
+      overlay: true, // Afficher les erreurs en overlay
+    },
   },
 })
