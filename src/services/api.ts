@@ -1,12 +1,11 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const API_V1 = '/api/v1'
+import { SERVICES, buildServiceURL } from '../config/services'
 
 export const api = {
   // Metrics endpoints
   metrics: {
     getDashboard: async (token: string) => {
-      const response = await fetch(`${API_BASE_URL}${API_V1}/metrics/dashboard`, {
+      const response = await fetch(buildServiceURL('METRIC', '/metrics/dashboard'), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -20,7 +19,7 @@ export const api = {
   // Conversation endpoints
   conversation: {
     sendMessage: async (token: string, userId: number, message: string, conversationId?: string) => {
-      const response = await fetch(`${API_BASE_URL}${API_V1}/conversation/${userId}`, {
+      const response = await fetch(buildServiceURL('CONVERSATION', `/conversation/${userId}`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -46,7 +45,7 @@ export const api = {
       onComplete: () => void,
       onConversationId?: (convId: number) => void
     ) => {
-      const response = await fetch(`${API_BASE_URL}${API_V1}/conversation/${userId}/stream`, {
+      const response = await fetch(buildServiceURL('CONVERSATION', `/conversation/${userId}/stream`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -114,7 +113,7 @@ export const api = {
 
     getHistory: async (token: string, userId: number, limit = 20) => {
       const response = await fetch(
-        `${API_BASE_URL}${API_V1}/conversation/conversations/${userId}?limit=${limit}`,
+        buildServiceURL('CONVERSATION', `/conversation/conversations/${userId}?limit=${limit}`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -128,7 +127,7 @@ export const api = {
 
     getConversation: async (token: string, conversationId: number) => {
       const response = await fetch(
-        `${API_BASE_URL}${API_V1}/conversation/conversation/${conversationId}/turns`,
+        buildServiceURL('CONVERSATION', `/conversation/conversation/${conversationId}/turns`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -148,7 +147,7 @@ export const api = {
       formData.append('username', email)
       formData.append('password', password)
 
-      const response = await fetch(`${API_BASE_URL}${API_V1}/users/auth/login`, {
+      const response = await fetch(buildServiceURL('USER', '/users/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -160,7 +159,7 @@ export const api = {
     },
 
     getMe: async (token: string) => {
-      const response = await fetch(`${API_BASE_URL}${API_V1}/users/me`, {
+      const response = await fetch(buildServiceURL('USER', '/users/me'), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

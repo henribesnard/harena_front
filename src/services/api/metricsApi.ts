@@ -2,7 +2,9 @@
  * API Client pour le Metric Service
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { SERVICES } from '../../config/services'
+
+const API_BASE_URL = SERVICES.METRIC.baseURL
 
 export interface MetricResponse<T = any> {
   user_id: number

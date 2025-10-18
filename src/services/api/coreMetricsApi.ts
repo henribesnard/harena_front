@@ -7,13 +7,13 @@ import type {
   CoverageData,
 } from '../../types/coreMetrics'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { SERVICES } from '../../config/services'
 
 class CoreMetricsAPI {
   private baseURL: string
 
   constructor() {
-    this.baseURL = `${API_BASE_URL}/api/v1/metrics`
+    this.baseURL = `${SERVICES.METRIC.baseURL}${SERVICES.METRIC.apiV1}/metrics`
   }
 
   private getAuthHeaders(): HeadersInit {
