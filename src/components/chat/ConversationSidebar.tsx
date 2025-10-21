@@ -79,7 +79,7 @@ interface ConversationItemProps {
 }
 
 const ConversationItem = ({ conversation, isActive, onClick }: ConversationItemProps) => {
-  const timeAgo = formatDistanceToNow(new Date(conversation.updated_at), {
+  const timeAgo = formatDistanceToNow(new Date(conversation.last_activity_at), {
     addSuffix: true,
     locale: fr,
   })
@@ -108,7 +108,7 @@ const ConversationItem = ({ conversation, isActive, onClick }: ConversationItemP
             <span className="text-xs text-gray-500">{timeAgo}</span>
             <span className="text-xs text-gray-400">•</span>
             <span className="text-xs text-gray-500">
-              {conversation.turn_count} message{conversation.turn_count > 1 ? 's' : ''}
+              {conversation.total_turns} message{conversation.total_turns > 1 ? 's' : ''}
             </span>
           </div>
         </div>

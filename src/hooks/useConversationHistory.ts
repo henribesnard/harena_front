@@ -6,8 +6,10 @@ export interface ConversationHistoryItem {
   id: number
   title: string
   created_at: string
-  updated_at: string
-  turn_count: number
+  last_activity_at: string  // v3 uses last_activity_at instead of updated_at
+  total_turns: number        // v3 uses total_turns instead of turn_count
+  status?: string            // v3 includes status field
+  data?: Record<string, any> // v3 includes data field
 }
 
 export const useConversationHistory = () => {

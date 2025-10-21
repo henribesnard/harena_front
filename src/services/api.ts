@@ -114,9 +114,9 @@ export const api = {
     },
 
     getHistory: async (token: string, userId: number, limit = 20) => {
-      // Use CONVERSATION_V1 for history (v3 doesn't have this endpoint)
+      // Use CONVERSATION (v3) for history - NOW WITH PERSISTENCE!
       const response = await fetch(
-        buildServiceURL('CONVERSATION_V1', `/conversation/conversations/${userId}?limit=${limit}`),
+        buildServiceURL('CONVERSATION', `/conversation/conversations/${userId}?limit=${limit}`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -129,9 +129,9 @@ export const api = {
     },
 
     getConversation: async (token: string, conversationId: number) => {
-      // Use CONVERSATION_V1 for fetching conversations (v3 doesn't have this endpoint)
+      // Use CONVERSATION (v3) for fetching conversations - NOW WITH PERSISTENCE!
       const response = await fetch(
-        buildServiceURL('CONVERSATION_V1', `/conversation/conversation/${conversationId}/turns`),
+        buildServiceURL('CONVERSATION', `/conversation/conversation/${conversationId}/turns`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,
