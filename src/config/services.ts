@@ -23,8 +23,8 @@ export const SERVICES = {
     apiV1: '/api/v1',
   },
   CONVERSATION: {
-    baseURL: import.meta.env.VITE_CONVERSATION_SERVICE_URL || 'http://localhost:3003',
-    apiV1: '/api/v1',
+    baseURL: import.meta.env.VITE_CONVERSATION_SERVICE_URL || 'http://localhost:3008',
+    apiV1: '/api/v3',
   },
   SYNC: {
     baseURL: import.meta.env.VITE_SYNC_SERVICE_URL || 'http://localhost:3004',

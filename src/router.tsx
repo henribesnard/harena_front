@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './features/auth/LoginPage'
 import ChatPage from './features/chat/ChatPage'
 import DashboardPage from './features/dashboard/DashboardPage'
+import BudgetProfilingPage from './pages/BudgetProfilingPage'
 
 const AppRouter = () => {
   return (
@@ -23,6 +24,7 @@ const AppRouter = () => {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Navigate to="/chat" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="budget" element={<BudgetProfilingPage />} />
           {/* TODO: Add other routes */}
         </Route>
       </Route>
