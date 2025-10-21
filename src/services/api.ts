@@ -19,6 +19,7 @@ export const api = {
   // Conversation endpoints
   conversation: {
     sendMessage: async (token: string, userId: number, message: string, conversationId?: string) => {
+      // Use CONVERSATION (v3) for sending messages
       const response = await fetch(buildServiceURL('CONVERSATION', `/conversation/${userId}`), {
         method: 'POST',
         headers: {
@@ -45,6 +46,7 @@ export const api = {
       onComplete: () => void,
       onConversationId?: (convId: number) => void
     ) => {
+      // Use CONVERSATION (v3) for sending messages
       const response = await fetch(buildServiceURL('CONVERSATION', `/conversation/${userId}/stream`), {
         method: 'POST',
         headers: {
@@ -112,8 +114,9 @@ export const api = {
     },
 
     getHistory: async (token: string, userId: number, limit = 20) => {
+      // Use CONVERSATION_V1 for history (v3 doesn't have this endpoint)
       const response = await fetch(
-        buildServiceURL('CONVERSATION', `/conversation/conversations/${userId}?limit=${limit}`),
+        buildServiceURL('CONVERSATION_V1', `/conversation/conversations/${userId}?limit=${limit}`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -126,8 +129,9 @@ export const api = {
     },
 
     getConversation: async (token: string, conversationId: number) => {
+      // Use CONVERSATION_V1 for fetching conversations (v3 doesn't have this endpoint)
       const response = await fetch(
-        buildServiceURL('CONVERSATION', `/conversation/conversation/${conversationId}/turns`),
+        buildServiceURL('CONVERSATION_V1', `/conversation/conversation/${conversationId}/turns`),
         {
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -22,6 +22,10 @@ export const SERVICES = {
     baseURL: import.meta.env.VITE_METRIC_SERVICE_URL || 'http://localhost:3002',
     apiV1: '/api/v1',
   },
+  CONVERSATION_V1: {
+    baseURL: import.meta.env.VITE_CONVERSATION_V1_SERVICE_URL || 'http://localhost:3003',
+    apiV1: '/api/v1',
+  },
   CONVERSATION: {
     baseURL: import.meta.env.VITE_CONVERSATION_SERVICE_URL || 'http://localhost:3008',
     apiV1: '/api/v3',
