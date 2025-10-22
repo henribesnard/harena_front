@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import ConversationSidebar from '../../components/chat/ConversationSidebar'
+import SuggestedQuestions from '../../components/chat/SuggestedQuestions'
+import TypingIndicator from '../../components/chat/TypingIndicator'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface Message {
@@ -175,6 +178,87 @@ const ChatPage = () => {
     }
   }
 
+  const handleQuestionClick = (question: string) => {
+    setInput(question)
+    // Auto-send the question
+    setTimeout(() => {
+      if (!isLoading && token && userId) {
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          role: 'user',
+          content: question,
+          timestamp: new Date(),
+        }
+
+        setMessages(prev => [...prev, userMessage])
+        setInput('')
+        setIsLoading(true)
+
+        // Create placeholder for assistant message
+        const assistantMessageId = (Date.now() + 1).toString()
+        const assistantMessage: Message = {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+          timestamp: new Date(),
+        }
+        setMessages(prev => [...prev, assistantMessage])
+
+        let accumulatedContent = ''
+
+        api.conversation.sendMessageStream(
+          token,
+          userId,
+          question,
+          conversationId?.toString(),
+          (chunk: string) => {
+            accumulatedContent += chunk
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedContent }
+                  : msg
+              )
+            )
+          },
+          (status: string) => {
+            console.log('Status:', status)
+          },
+          (error: string) => {
+            console.error('Stream error:', error)
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: error || 'Une erreur est survenue.' }
+                  : msg
+              )
+            )
+          },
+          () => {
+            console.log('Stream complete')
+            setIsLoading(false)
+            queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
+          },
+          (convId: number) => {
+            console.log('Received conversation_id:', convId)
+            setConversationId(convId)
+          }
+        ).catch(error => {
+          console.error('Error sending message:', error)
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: 'Une erreur est survenue. Veuillez réessayer.' }
+                : msg
+            )
+          )
+          queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
+          setIsLoading(false)
+        })
+      }
+    }, 100)
+  }
+
   return (
     <div className="flex h-full">
       {/* Conversation Sidebar */}
@@ -187,88 +271,95 @@ const ChatPage = () => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col w-full">
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
-              <span className="text-3xl">💬</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Bienvenue sur Harena
-            </h2>
-            <p className="text-gray-600 max-w-md">
-              Posez-moi des questions sur vos finances, recherchez des transactions,
-              ou demandez des analyses de vos dépenses.
-            </p>
-          </div>
+          <SuggestedQuestions onQuestionClick={handleQuestionClick} />
         ) : (
-          <>
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-gradient-primary text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
+          <div className="max-w-3xl mx-auto space-y-6">
+            <AnimatePresence mode="popLayout">
+              {messages.map((message, index) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.03
+                  }}
+                  className="group"
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-                  <span
-                    className={`text-xs mt-1 block ${
-                      message.role === 'user' ? 'text-white/70' : 'text-gray-500'
-                    }`}
-                  >
-                    {message.timestamp.toLocaleTimeString('fr-FR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </div>
-              </div>
-            ))}
+                  <div className={`flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {/* Avatar */}
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      message.role === 'user'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}>
+                      {message.role === 'user' ? 'V' : 'H'}
+                    </div>
+
+                    {/* Message Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">
+                        {message.content}
+                      </p>
+                      <span className="text-xs text-gray-400 mt-1 block">
+                        {message.timestamp.toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-2xl px-4 py-3">
-                  <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
+                  H
                 </div>
+                <TypingIndicator />
               </div>
             )}
             <div ref={messagesEndRef} />
-          </>
+          </div>
         )}
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-end space-x-2">
-          <div className="flex-1 relative">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Posez votre question..."
-              rows={1}
-              className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-              style={{ minHeight: '48px', maxHeight: '120px' }}
-            />
+        <div className="bg-white px-4 py-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Posez votre question..."
+                rows={1}
+                className="w-full px-4 py-3.5 pr-12 rounded-2xl border border-gray-300 focus:outline-none focus:border-gray-400 resize-none transition-all duration-200 bg-white shadow-sm"
+                style={{ minHeight: '52px', maxHeight: '120px' }}
+              />
+              <motion.button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`absolute right-2 bottom-2 flex items-center justify-center w-9 h-9 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                  input.trim() && !isLoading
+                    ? 'bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                    : 'bg-gray-800 hover:bg-gray-900'
+                }`}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </motion.button>
+            </div>
           </div>
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className="flex items-center justify-center w-12 h-12 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
-        </div>
         </div>
       </div>
     </div>

@@ -1,24 +1,19 @@
-import { Calendar, CalendarDays, ArrowUpRight, ArrowDownRight, Shield, CreditCard, Banknote } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { useCoreMetrics } from '../../hooks/useCoreMetrics'
 
 const MetricsBar = () => {
   const { yoyExpenses, momExpenses, yoyIncome, momIncome, coverage } = useCoreMetrics()
-
-  // Debug coverage
-  console.log('Coverage data:', coverage.data, 'Error:', coverage.error, 'Loading:', coverage.isLoading)
 
   // Show loading if any metric is loading
   const isLoading = yoyExpenses.isLoading || momExpenses.isLoading || yoyIncome.isLoading || momIncome.isLoading || coverage.isLoading
 
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-3 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center space-x-6 overflow-x-auto">
-          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
-          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
-          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
-          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
-          <div className="h-6 w-32 bg-white/20 animate-pulse rounded"></div>
+      <div className="border-b border-gray-200 bg-white px-4 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-center space-x-6 overflow-x-auto">
+          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
         </div>
       </div>
     )
@@ -33,150 +28,77 @@ const MetricsBar = () => {
     }).format(amount)
   }
 
-  const EvolutionBadgeExpenses = ({ couleur, direction, percent }: { couleur: string; direction: 'up' | 'down' | 'stable'; percent: number }) => {
-    // Pour les dépenses (après fix backend):
-    // - Si percent < 0 (diminution) => vert (positif) + flèche down
-    // - Si percent > 0 (augmentation) => rouge (négatif) + flèche up
-    const Icon = direction === 'down' ? ArrowDownRight : direction === 'up' ? ArrowUpRight : null
-    const colorClass = couleur === 'green' ? 'text-green-600 bg-white/90' : couleur === 'red' ? 'text-red-600 bg-white/90' : 'text-gray-600 bg-white/90'
-
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
-        {Icon && <Icon className="w-3 h-3 mr-0.5" />}
-        {percent >= 0 ? '+' : ''}{percent.toFixed(1)}%
-      </span>
-    )
+  const formatCompact = (amount: number) => {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}M€`
+    }
+    if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(1)}k€`
+    }
+    return `${amount}€`
   }
 
-  const EvolutionBadgeIncome = ({ couleur, direction, percent }: { couleur: string; direction: 'up' | 'down' | 'stable'; percent: number }) => {
-    // Pour les revenus (après fix backend):
-    // - Si percent > 0 (augmentation) => vert (positif) + flèche up
-    // - Si percent < 0 (diminution) => rouge (négatif) + flèche down
-    const Icon = direction === 'up' ? ArrowUpRight : direction === 'down' ? ArrowDownRight : null
-    const colorClass = couleur === 'green' ? 'text-green-600 bg-white/90' : couleur === 'red' ? 'text-red-600 bg-white/90' : 'text-gray-600 bg-white/90'
+  const MetricBadge = ({ label, value, percent, isPositive }: { label: string; value: string; percent?: number; isPositive?: boolean }) => {
+    const Icon = percent !== undefined ? (isPositive ? ArrowUpRight : ArrowDownRight) : null
+    const percentColor = isPositive ? 'text-green-600' : 'text-red-600'
 
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colorClass}`}>
-        {Icon && <Icon className="w-3 h-3 mr-0.5" />}
-        {percent >= 0 ? '+' : ''}{percent.toFixed(1)}%
-      </span>
+      <div className="flex items-center space-x-2 text-xs">
+        <span className="text-gray-500 font-medium">{label}</span>
+        <span className="font-semibold text-gray-900">{value}</span>
+        {percent !== undefined && Icon && (
+          <span className={`flex items-center gap-0.5 font-medium ${percentColor}`}>
+            <Icon className="w-3 h-3" />
+            {Math.abs(percent).toFixed(1)}%
+          </span>
+        )}
+      </div>
     )
-  }
-
-  const getCoverageColor = (taux: number) => {
-    if (taux >= 20) return 'text-green-400'
-    if (taux >= 10) return 'text-green-300'
-    if (taux >= 5) return 'text-yellow-300'
-    if (taux >= 0) return 'text-orange-400'
-    return 'text-red-400'
   }
 
   return (
-    <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-3 shadow-lg">
+    <div className="bg-white px-4 py-3">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between flex-wrap gap-4 overflow-x-auto">
-
-          {/* YoY Expenses */}
-          {yoyExpenses.data && (
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <Calendar className="w-5 h-5 text-white/80" />
-              <div>
-                <p className="text-xs text-white/70 font-medium">📅 Dépenses (YoY)</p>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-white font-mono">
-                    {formatCurrency(yoyExpenses.data.periode_cible.total)}
-                  </span>
-                  <EvolutionBadgeExpenses
-                    couleur={yoyExpenses.data.affichage.couleur}
-                    percent={yoyExpenses.data.variation.pourcentage}
-                    direction={yoyExpenses.data.variation.direction}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MoM Expenses */}
+        <div className="flex items-center justify-center gap-12 flex-wrap text-xs">
+          {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <CalendarDays className="w-5 h-5 text-white/80" />
-              <div>
-                <p className="text-xs text-white/70 font-medium">📆 Dépenses (MoM)</p>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-white font-mono">
-                    {formatCurrency(momExpenses.data.periode_cible.total)}
-                  </span>
-                  <EvolutionBadgeExpenses
-                    couleur={momExpenses.data.affichage.couleur}
-                    percent={momExpenses.data.variation.pourcentage}
-                    direction={momExpenses.data.variation.direction}
-                  />
-                </div>
-              </div>
-            </div>
+            <MetricBadge
+              label="Dépenses"
+              value={formatCompact(momExpenses.data.periode_cible.total)}
+              percent={momExpenses.data.variation.pourcentage}
+              isPositive={momExpenses.data.affichage.couleur === 'green'}
+            />
           )}
 
-          {/* YoY Income */}
-          {yoyIncome.data && (
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <Banknote className="w-5 h-5 text-white/80" />
-              <div>
-                <p className="text-xs text-white/70 font-medium">💰 Revenus (YoY)</p>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-white font-mono">
-                    {formatCurrency(yoyIncome.data.periode_cible.total)}
-                  </span>
-                  <EvolutionBadgeIncome
-                    couleur={yoyIncome.data.affichage.couleur}
-                    percent={yoyIncome.data.variation.pourcentage}
-                    direction={yoyIncome.data.variation.direction}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MoM Income */}
+          {/* Revenus MoM */}
           {momIncome.data && (
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <CreditCard className="w-5 h-5 text-white/80" />
-              <div>
-                <p className="text-xs text-white/70 font-medium">💳 Revenus (MoM)</p>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-white font-mono">
-                    {formatCurrency(momIncome.data.periode_cible.total)}
-                  </span>
-                  <EvolutionBadgeIncome
-                    couleur={momIncome.data.affichage.couleur}
-                    percent={momIncome.data.variation.pourcentage}
-                    direction={momIncome.data.variation.direction}
-                  />
-                </div>
-              </div>
-            </div>
+            <MetricBadge
+              label="Revenus"
+              value={formatCompact(momIncome.data.periode_cible.total)}
+              percent={momIncome.data.variation.pourcentage}
+              isPositive={momIncome.data.affichage.couleur === 'green'}
+            />
           )}
 
-          {/* Coverage Rate */}
-          {!coverage.isLoading && (
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <Shield className={`w-5 h-5 ${coverage.data ? getCoverageColor(coverage.data.taux_couverture) : 'text-white/80'}`} />
-              <div>
-                <p className="text-xs text-white/70 font-medium">🛡️ Taux de Couverture</p>
-                {coverage.data ? (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-bold text-white font-mono">
-                      {coverage.data.taux_couverture.toFixed(1)}%
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full bg-white/20 ${getCoverageColor(coverage.data.taux_couverture)}`}>
-                      {coverage.data.affichage.niveau || 'N/A'}
-                    </span>
-                  </div>
-                ) : coverage.error ? (
-                  <span className="text-xs text-red-300">Erreur</span>
-                ) : (
-                  <span className="text-xs text-white/60">Aucune donnée</span>
-                )}
-              </div>
+          {/* Taux de Couverture */}
+          {coverage.data && (
+            <MetricBadge
+              label="Couverture"
+              value={`${coverage.data.taux_couverture.toFixed(1)}%`}
+            />
+          )}
+
+          {/* Divider - Plus visible */}
+          <div className="hidden md:block w-px h-5 bg-gray-300"></div>
+
+          {/* YoY Expenses - Optionnel */}
+          {yoyExpenses.data && (
+            <div className="hidden lg:flex items-center space-x-2 text-xs">
+              <span className="text-gray-500 font-medium">YoY</span>
+              <span className={`flex items-center gap-0.5 ${yoyExpenses.data.affichage.couleur === 'green' ? 'text-green-600' : 'text-red-600'}`}>
+                {yoyExpenses.data.variation.direction === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                {Math.abs(yoyExpenses.data.variation.pourcentage).toFixed(1)}%
+              </span>
             </div>
           )}
         </div>
