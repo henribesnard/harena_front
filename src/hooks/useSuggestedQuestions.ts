@@ -11,7 +11,7 @@ export interface SuggestedQuestion {
 const questionPool: SuggestedQuestion[] = [
   // Budget & Analyse
   {
-    question: "Analysez mon budget des 3 derniers mois",
+    question: "Analyse mon budget des 3 derniers mois",
     category: "Budget",
     icon: "PieChart",
     color: "from-purple-500 to-purple-600"
@@ -31,7 +31,7 @@ const questionPool: SuggestedQuestion[] = [
 
   // Comparaisons & Tendances
   {
-    question: "Comparez mes dépenses ce mois vs le mois dernier",
+    question: "Compare mes dépenses ce mois vs le mois dernier",
     category: "Analyse",
     icon: "TrendingUp",
     color: "from-blue-500 to-indigo-600"
@@ -43,7 +43,7 @@ const questionPool: SuggestedQuestion[] = [
     color: "from-cyan-500 to-blue-600"
   },
   {
-    question: "Identifiez mes plus grosses dépenses ce mois",
+    question: "Identifie mes plus grosses dépenses ce mois",
     category: "Dépenses",
     icon: "ShoppingCart",
     color: "from-red-500 to-rose-600"
@@ -51,19 +51,19 @@ const questionPool: SuggestedQuestion[] = [
 
   // Recherche de transactions
   {
-    question: "Trouvez toutes mes transactions Netflix",
+    question: "Trouve toutes mes transactions Netflix",
     category: "Recherche",
     icon: "Search",
     color: "from-violet-500 to-purple-600"
   },
   {
-    question: "Montrez-moi mes dépenses restaurants ce mois",
+    question: "Montre-moi mes dépenses restaurants ce mois",
     category: "Recherche",
     icon: "Search",
     color: "from-pink-500 to-rose-600"
   },
   {
-    question: "Listez mes virements de loyer",
+    question: "Liste mes virements de loyer",
     category: "Recherche",
     icon: "Home",
     color: "from-indigo-500 to-purple-600"
@@ -71,7 +71,7 @@ const questionPool: SuggestedQuestion[] = [
 
   // Prévisions & Conseils
   {
-    question: "Prévoyez mon budget pour le mois prochain",
+    question: "Prévois mon budget pour le mois prochain",
     category: "Prévisions",
     icon: "Calendar",
     color: "from-teal-500 to-cyan-600"
@@ -83,7 +83,7 @@ const questionPool: SuggestedQuestion[] = [
     color: "from-emerald-500 to-green-600"
   },
   {
-    question: "Analysez mes dépenses récurrentes",
+    question: "Analyse mes dépenses récurrentes",
     category: "Analyse",
     icon: "BarChart3",
     color: "from-blue-500 to-indigo-600"
@@ -97,13 +97,13 @@ const questionPool: SuggestedQuestion[] = [
     color: "from-green-500 to-teal-600"
   },
   {
-    question: "Résumez mes dernières transactions",
+    question: "Résume mes dernières transactions",
     category: "Activité",
     icon: "Zap",
     color: "from-yellow-500 to-amber-600"
   },
   {
-    question: "Comparez mes charges fixes vs variables",
+    question: "Compare mes charges fixes vs variables",
     category: "Budget",
     icon: "PieChart",
     color: "from-purple-500 to-violet-600"

@@ -124,7 +124,7 @@ Dans `SuggestedQuestions.tsx`, lignes 50-57 :
   Bienvenue sur Harena {/* Personnalisable */}
 </h2>
 <p className="text-gray-600 max-w-md">
-  Que voulez-vous savoir sur vos finances aujourd'hui ?
+  Que veux-tu savoir sur tes finances aujourd'hui ?
   {/* Personnalisable */}
 </p>
 ```

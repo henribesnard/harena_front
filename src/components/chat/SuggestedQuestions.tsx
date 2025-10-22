@@ -36,7 +36,7 @@ const SuggestedQuestions = ({ onQuestionClick }: SuggestedQuestionsProps) => {
           Bienvenue sur Harena
         </h1>
         <p className="text-lg text-gray-500">
-          Que voulez-vous savoir sur vos finances aujourd'hui ?
+          Que veux-tu savoir sur tes finances aujourd'hui ?
         </p>
       </motion.div>
 
