@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/authStore'
 import ConversationSidebar from '../../components/chat/ConversationSidebar'
 import SuggestedQuestions from '../../components/chat/SuggestedQuestions'
 import TypingIndicator from '../../components/chat/TypingIndicator'
+import StatusMessage from '../../components/chat/StatusMessage'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface Message {
@@ -23,6 +24,7 @@ const ChatPage = () => {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<number | undefined>()
+  const [currentStatus, setCurrentStatus] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -95,6 +97,7 @@ const ChatPage = () => {
     const currentInput = input
     setInput('')
     setIsLoading(true)
+    setCurrentStatus('') // Reset le statut
 
     // Create placeholder for assistant message
     const assistantMessageId = (Date.now() + 1).toString()
@@ -116,6 +119,10 @@ const ChatPage = () => {
         conversationId?.toString(),
         // onChunk - append text as it arrives
         (chunk: string) => {
+          // Dès que le premier chunk arrive, effacer le message de statut
+          if (accumulatedContent === '') {
+            setCurrentStatus('')
+          }
           accumulatedContent += chunk
           setMessages(prev =>
             prev.map(msg =>
@@ -125,9 +132,10 @@ const ChatPage = () => {
             )
           )
         },
-        // onStatus - could show status updates
+        // onStatus - affiche les messages de progression
         (status: string) => {
           console.log('Status:', status)
+          setCurrentStatus(status)
         },
         // onError
         (error: string) => {
@@ -193,6 +201,7 @@ const ChatPage = () => {
         setMessages(prev => [...prev, userMessage])
         setInput('')
         setIsLoading(true)
+        setCurrentStatus('') // Reset le statut
 
         // Create placeholder for assistant message
         const assistantMessageId = (Date.now() + 1).toString()
@@ -212,6 +221,10 @@ const ChatPage = () => {
           question,
           conversationId?.toString(),
           (chunk: string) => {
+            // Dès que le premier chunk arrive, effacer le message de statut
+            if (accumulatedContent === '') {
+              setCurrentStatus('')
+            }
             accumulatedContent += chunk
             setMessages(prev =>
               prev.map(msg =>
@@ -223,6 +236,7 @@ const ChatPage = () => {
           },
           (status: string) => {
             console.log('Status:', status)
+            setCurrentStatus(status)
           },
           (error: string) => {
             console.error('Stream error:', error)
@@ -320,7 +334,11 @@ const ChatPage = () => {
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
                   H
                 </div>
-                <TypingIndicator />
+                {currentStatus ? (
+                  <StatusMessage message={currentStatus} />
+                ) : (
+                  <TypingIndicator />
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />
