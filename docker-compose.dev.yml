@@ -18,6 +18,8 @@ services:
       - ./tsconfig.node.json:/app/tsconfig.node.json
       - ./tailwind.config.js:/app/tailwind.config.js
       - ./postcss.config.js:/app/postcss.config.js
+      # Fichier .env pour la configuration des services
+      # Changez simplement le .env pour basculer entre local et AWS
       - ./.env:/app/.env
 
       # Exclude node_modules (utiliser ceux du container)
