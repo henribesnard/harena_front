@@ -103,8 +103,12 @@ export const useAuthStore = create<AuthState>()(
 
           set({ user: userData, isLoading: false, isAuthenticated: true })
         } catch (error) {
-          // Token invalide, déconnexion
+          // Token invalide ou expiré, déconnexion
+          console.warn('fetchUser failed - token expired or invalid, redirecting to login')
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
+
+          // Redirection vers la page de login
+          window.location.href = '/login'
         }
       },
 

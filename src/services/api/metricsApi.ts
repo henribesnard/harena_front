@@ -3,6 +3,8 @@
  */
 
 import { SERVICES } from '../../config/services'
+import { handleApiError } from '../../utils/apiHelpers'
+import { useAuthStore } from '../../stores/authStore'
 
 const API_BASE_URL = SERVICES.METRIC.baseURL
 
@@ -127,6 +129,12 @@ class MetricsAPI {
     })
 
     if (!response.ok) {
+      // Gérer les erreurs 401 (token expiré)
+      if (response.status === 401) {
+        console.warn('Token expiré dans metricsApi - Déconnexion et redirection vers login')
+        const { logout } = useAuthStore.getState()
+        handleApiError(response, logout)
+      }
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 

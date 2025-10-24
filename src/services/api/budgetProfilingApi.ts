@@ -6,6 +6,7 @@ import type {
   CategoryBreakdown,
   AnalyzeProfileResponse
 } from '../../types/budgetProfiling'
+import { useAuthStore } from '../../stores/authStore'
 
 const BUDGET_PROFILING_API = import.meta.env.VITE_BUDGET_PROFILING_API_URL || 'http://localhost:3006/api/v1/budget'
 
@@ -19,12 +20,29 @@ const api = axios.create({
 
 // Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  // Récupérer le token depuis le store Zustand persisté
+  const persistedAuth = localStorage.getItem('harena-auth')
+  const token = persistedAuth ? JSON.parse(persistedAuth).state.token : null
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
+
+// Intercepteur pour gérer les erreurs 401 (token expiré)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn('Token expiré dans budgetProfilingApi - Déconnexion et redirection vers login')
+      const { logout } = useAuthStore.getState()
+      logout()
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
 
 /**
  * Récupère le profil budgétaire sauvegardé de l'utilisateur

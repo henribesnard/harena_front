@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import AppRouter from './router'
+import { useTokenValidation } from './hooks/useTokenValidation'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,23 +14,34 @@ const queryClient = new QueryClient({
   },
 })
 
+function AppContent() {
+  // Vérifier la validité du token au démarrage et périodiquement
+  useTokenValidation()
+
+  return (
+    <>
+      <AppRouter />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#2d3748',
+            borderRadius: '12px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          },
+        }}
+      />
+    </>
+  )
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AppRouter />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#fff',
-              color: '#2d3748',
-              borderRadius: '12px',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-            },
-          }}
-        />
+        <AppContent />
       </BrowserRouter>
     </QueryClientProvider>
   )
