@@ -14,6 +14,8 @@ const MetricsBar = () => {
           <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
           <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
           <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
         </div>
       </div>
     )
@@ -63,7 +65,7 @@ const MetricsBar = () => {
           {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
             <MetricBadge
-              label="Dépenses"
+              label="MoM Dépenses"
               value={formatCompact(momExpenses.data.periode_cible.total)}
               percent={momExpenses.data.variation.pourcentage}
               isPositive={momExpenses.data.affichage.couleur === 'green'}
@@ -73,7 +75,7 @@ const MetricsBar = () => {
           {/* Revenus MoM */}
           {momIncome.data && (
             <MetricBadge
-              label="Revenus"
+              label="MoM Revenus"
               value={formatCompact(momIncome.data.periode_cible.total)}
               percent={momIncome.data.variation.pourcentage}
               isPositive={momIncome.data.affichage.couleur === 'green'}
@@ -91,13 +93,24 @@ const MetricsBar = () => {
           {/* Divider - Plus visible */}
           <div className="hidden md:block w-px h-5 bg-gray-300"></div>
 
-          {/* YoY Expenses - Optionnel */}
+          {/* YoY Expenses */}
           {yoyExpenses.data && (
             <div className="hidden lg:flex items-center space-x-2 text-xs">
-              <span className="text-gray-500 font-medium">YoY</span>
+              <span className="text-gray-500 font-medium">YoY Dépenses</span>
               <span className={`flex items-center gap-0.5 ${yoyExpenses.data.affichage.couleur === 'green' ? 'text-green-600' : 'text-red-600'}`}>
                 {yoyExpenses.data.variation.direction === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                 {Math.abs(yoyExpenses.data.variation.pourcentage).toFixed(1)}%
+              </span>
+            </div>
+          )}
+
+          {/* YoY Income */}
+          {yoyIncome.data && (
+            <div className="hidden lg:flex items-center space-x-2 text-xs">
+              <span className="text-gray-500 font-medium">YoY Revenus</span>
+              <span className={`flex items-center gap-0.5 ${yoyIncome.data.affichage.couleur === 'green' ? 'text-green-600' : 'text-red-600'}`}>
+                {yoyIncome.data.variation.direction === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                {Math.abs(yoyIncome.data.variation.pourcentage).toFixed(1)}%
               </span>
             </div>
           )}
