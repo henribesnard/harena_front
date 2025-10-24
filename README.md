@@ -23,15 +23,59 @@ Interface utilisateur pour Harena, un assistant financier intelligent basé sur 
 # Installer les dépendances
 npm install
 
-# Lancer le serveur de développement
+# Lancer le serveur de développement (local)
 npm run dev
 
-# Builder pour la production
-npm run build
+# OU utiliser le script de démarrage rapide
+./dev.sh       # Linux/Mac
+dev.bat        # Windows
+
+# Builder pour la production (AWS)
+npm run build:prod
+
+# Builder pour le local
+npm run build:local
 
 # Preview de la production
 npm run preview
 ```
+
+## ⚙️ Configuration des Environnements
+
+Le projet supporte deux environnements :
+
+### 🏠 Développement Local
+
+Pour développer avec les services backend en local (Docker Compose) :
+
+```bash
+# Les URLs localhost sont déjà configurées dans .env.local
+npm run dev
+```
+
+**Backend requis** : Services Docker sur ports 3000-3008
+
+### ☁️ Production AWS
+
+Pour tester avec le backend de production :
+
+```bash
+# Pointe vers http://63.35.52.216 (AWS EC2)
+npm run dev:prod
+
+# Ou pour build production
+npm run build:prod
+```
+
+**Documentation complète** : Voir [ENVIRONMENTS.md](./ENVIRONMENTS.md)
+
+### Fichiers de configuration
+
+| Fichier | Usage |
+|---------|-------|
+| `.env.local` | URLs localhost (dev) |
+| `.env.production` | URLs AWS (prod) |
+| `.env.example` | Template |
 
 ## Structure du Projet
 
@@ -89,12 +133,6 @@ POST /api/v1/users/auth/login
 GET /api/v1/users/me
 ```
 
-### Configuration
-
-Créez un fichier `.env` à partir de `.env.example` :
-```bash
-VITE_API_URL=http://localhost:8000
-```
 
 ## Développement
 
