@@ -8,6 +8,8 @@ import type {
 } from '../../types/coreMetrics'
 
 import { SERVICES } from '../../config/services'
+import { handleApiError } from '../../utils/apiHelpers'
+import { useAuthStore } from '../../stores/authStore'
 
 class CoreMetricsAPI {
   private baseURL: string
@@ -48,6 +50,14 @@ class CoreMetricsAPI {
     if (!response.ok) {
       const errorText = await response.text()
       console.error(`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`, errorText)
+
+      // Gérer les erreurs 401 (token expiré)
+      if (response.status === 401) {
+        console.warn('Token expiré - Déconnexion et redirection vers login')
+        const { logout } = useAuthStore.getState()
+        handleApiError(response, logout)
+      }
+
       throw new Error(`Failed to fetch metric: ${response.statusText}`)
     }
 

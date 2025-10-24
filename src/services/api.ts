@@ -1,5 +1,7 @@
 // API Configuration
 import { SERVICES, buildServiceURL } from '../config/services'
+import { handleApiError } from '../utils/apiHelpers'
+import { useAuthStore } from '../stores/authStore'
 
 export const api = {
   // Metrics endpoints
@@ -11,7 +13,13 @@ export const api = {
           'Content-Type': 'application/json',
         },
       })
-      if (!response.ok) throw new Error('Failed to fetch dashboard metrics')
+      if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
+        throw new Error('Failed to fetch dashboard metrics')
+      }
       return response.json()
     },
   },
@@ -31,7 +39,13 @@ export const api = {
           conversation_id: conversationId,
         }),
       })
-      if (!response.ok) throw new Error('Failed to send message')
+      if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
+        throw new Error('Failed to send message')
+      }
       return response.json()
     },
 
@@ -60,6 +74,10 @@ export const api = {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
         throw new Error('Failed to send message')
       }
 
@@ -124,7 +142,13 @@ export const api = {
           },
         }
       )
-      if (!response.ok) throw new Error('Failed to fetch conversation history')
+      if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
+        throw new Error('Failed to fetch conversation history')
+      }
       return response.json()
     },
 
@@ -139,7 +163,13 @@ export const api = {
           },
         }
       )
-      if (!response.ok) throw new Error('Failed to fetch conversation')
+      if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
+        throw new Error('Failed to fetch conversation')
+      }
       return response.json()
     },
   },
@@ -169,7 +199,13 @@ export const api = {
           'Content-Type': 'application/json',
         },
       })
-      if (!response.ok) throw new Error('Failed to fetch user info')
+      if (!response.ok) {
+        if (response.status === 401) {
+          const { logout } = useAuthStore.getState()
+          handleApiError(response, logout)
+        }
+        throw new Error('Failed to fetch user info')
+      }
       return response.json()
     },
   },
