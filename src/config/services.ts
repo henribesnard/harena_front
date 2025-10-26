@@ -9,6 +9,12 @@ interface ServiceConfig {
 }
 
 // Configuration des services avec leurs ports Docker respectifs
+console.log('🔍 ENV CHECK:', {
+  METRIC: import.meta.env.VITE_METRIC_SERVICE_URL,
+  USER: import.meta.env.VITE_USER_SERVICE_URL,
+  CONVERSATION: import.meta.env.VITE_CONVERSATION_SERVICE_URL
+});
+
 export const SERVICES = {
   USER: {
     baseURL: import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:3000',

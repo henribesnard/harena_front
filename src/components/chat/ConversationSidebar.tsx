@@ -9,12 +9,16 @@ interface ConversationSidebarProps {
   currentConversationId?: number
   onSelectConversation: (conversationId: number) => void
   onNewConversation: () => void
+  open: boolean
+  onClose: () => void
 }
 
 const ConversationSidebar = ({
   currentConversationId,
   onSelectConversation,
-  onNewConversation
+  onNewConversation,
+  open,
+  onClose
 }: ConversationSidebarProps) => {
   const { data: conversations, isLoading, error } = useConversationHistory()
   const { user, logout } = useAuthStore()
@@ -56,7 +60,22 @@ const ConversationSidebar = ({
   const fullName = getFullName()
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 z-50">
+    <>
+      {/* Mobile Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        w-64 h-screen bg-white border-r border-gray-200 flex flex-col fixed left-0 top-0 z-50
+        transform transition-transform duration-300 ease-in-out
+        ${open ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0
+      `}>
       {/* Logo Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
@@ -148,6 +167,7 @@ const ConversationSidebar = ({
         )}
       </div>
     </div>
+    </>
   )
 }
 

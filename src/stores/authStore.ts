@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { api } from '../services/api'
+import { queryClient } from '../lib/queryClient'
 
 interface User {
   id: number
@@ -61,6 +62,10 @@ export const useAuthStore = create<AuthState>()(
           }
 
           set({ user: userData, isLoading: false })
+
+          // Invalider tout le cache React Query pour forcer le rechargement avec le nouveau token
+          queryClient.clear()
+          console.log('React Query cache cleared after login')
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Erreur de connexion'
           set({ error: errorMessage, isLoading: false, isAuthenticated: false })
@@ -75,6 +80,10 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           error: null,
         })
+
+        // Nettoyer tout le cache React Query pour éviter d'afficher les données de l'ancien utilisateur
+        queryClient.clear()
+        console.log('React Query cache cleared after logout')
       },
 
       fetchUser: async () => {
@@ -106,6 +115,10 @@ export const useAuthStore = create<AuthState>()(
           // Token invalide ou expiré, déconnexion
           console.warn('fetchUser failed - token expired or invalid, redirecting to login')
           set({ user: null, token: null, isAuthenticated: false, isLoading: false })
+
+          // Nettoyer le cache React Query car le token est invalide
+          queryClient.clear()
+          console.log('React Query cache cleared due to invalid token')
 
           // Redirection vers la page de login
           window.location.href = '/login'

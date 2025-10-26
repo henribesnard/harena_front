@@ -4,7 +4,8 @@ import MetricsBar from './MetricsBar'
 const ChatLayout = () => {
   return (
     <div className="min-h-screen bg-white">
-      <div className="ml-64">
+      {/* Responsive margin: none on mobile, 256px (w-64) on desktop */}
+      <div className="lg:ml-64">
         <MetricsBar />
 
         <main className="flex-1 w-full overflow-hidden">

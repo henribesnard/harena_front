@@ -9,13 +9,15 @@ const MetricsBar = () => {
 
   if (isLoading) {
     return (
-      <div className="border-b border-gray-200 bg-white px-4 py-2">
-        <div className="max-w-7xl mx-auto flex items-center justify-center space-x-6 overflow-x-auto">
-          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
-          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
-          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
-          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
-          <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+      <div className="bg-white border-b border-gray-200 overflow-hidden">
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-6 py-2 sm:py-3 px-2 sm:px-4 min-w-max sm:min-w-0">
+            <div className="h-4 w-20 sm:w-24 bg-gray-200 animate-pulse rounded flex-shrink-0"></div>
+            <div className="h-4 w-20 sm:w-24 bg-gray-200 animate-pulse rounded flex-shrink-0"></div>
+            <div className="h-4 w-20 sm:w-24 bg-gray-200 animate-pulse rounded flex-shrink-0"></div>
+            <div className="h-4 w-20 sm:w-24 bg-gray-200 animate-pulse rounded flex-shrink-0"></div>
+            <div className="h-4 w-20 sm:w-24 bg-gray-200 animate-pulse rounded flex-shrink-0"></div>
+          </div>
         </div>
       </div>
     )
@@ -45,11 +47,11 @@ const MetricsBar = () => {
     const percentColor = isPositive ? 'text-green-600' : 'text-red-600'
 
     return (
-      <div className="flex items-center space-x-2 text-xs">
-        <span className="text-gray-500 font-medium">{label}</span>
-        <span className="font-semibold text-gray-900">{value}</span>
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-shrink-0">
+        <span className="text-gray-500 font-medium whitespace-nowrap">{label}</span>
+        <span className="font-semibold text-gray-900 whitespace-nowrap">{value}</span>
         {percent !== undefined && Icon && (
-          <span className={`flex items-center gap-0.5 font-medium ${percentColor}`}>
+          <span className={`flex items-center gap-0.5 font-medium ${percentColor} whitespace-nowrap`}>
             <Icon className="w-3 h-3" />
             {Math.abs(percent).toFixed(1)}%
           </span>
@@ -59,9 +61,10 @@ const MetricsBar = () => {
   }
 
   return (
-    <div className="bg-white px-4 py-3">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-center gap-12 flex-wrap text-xs">
+    <div className="bg-white border-b border-gray-200 overflow-hidden">
+      <div className="w-full overflow-x-auto scrollbar-hide">
+        {/* Desktop: center, Mobile: horizontal scroll */}
+        <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs py-2 sm:py-3 px-2 sm:px-4 min-w-max sm:min-w-0">
           {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
             <MetricBadge
@@ -90,13 +93,13 @@ const MetricsBar = () => {
             />
           )}
 
-          {/* Divider - Plus visible */}
-          <div className="hidden md:block w-px h-5 bg-gray-300"></div>
+          {/* Divider */}
+          <div className="w-px h-4 bg-gray-300 flex-shrink-0"></div>
 
           {/* YoY Expenses */}
           {yoyExpenses.data && (
-            <div className="hidden lg:flex items-center space-x-2 text-xs">
-              <span className="text-gray-500 font-medium">YoY Dépenses</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-shrink-0">
+              <span className="text-gray-500 font-medium whitespace-nowrap">YoY Dépenses</span>
               <span className={`flex items-center gap-0.5 ${yoyExpenses.data.affichage.couleur === 'green' ? 'text-green-600' : 'text-red-600'}`}>
                 {yoyExpenses.data.variation.direction === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                 {Math.abs(yoyExpenses.data.variation.pourcentage).toFixed(1)}%
@@ -106,8 +109,8 @@ const MetricsBar = () => {
 
           {/* YoY Income */}
           {yoyIncome.data && (
-            <div className="hidden lg:flex items-center space-x-2 text-xs">
-              <span className="text-gray-500 font-medium">YoY Revenus</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-shrink-0">
+              <span className="text-gray-500 font-medium whitespace-nowrap">YoY Revenus</span>
               <span className={`flex items-center gap-0.5 ${yoyIncome.data.affichage.couleur === 'green' ? 'text-green-600' : 'text-red-600'}`}>
                 {yoyIncome.data.variation.direction === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                 {Math.abs(yoyIncome.data.variation.pourcentage).toFixed(1)}%

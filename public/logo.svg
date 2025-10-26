@@ -1,0 +1,35 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Chat bubble base -->
+  <path d="M140 60 C160 60 175 75 175 95 L175 125 C175 145 160 160 140 160 L110 160 L95 175 L95 160 L80 160 C60 160 45 145 45 125 L45 95 C45 75 60 60 80 60 Z" fill="url(#gradient)" opacity="0.15"/>
+
+  <!-- H structure with trend integration -->
+  <!-- Left pillar of H -->
+  <rect x="65" y="70" width="12" height="90" rx="6" fill="url(#gradient)"/>
+
+  <!-- Right pillar of H with trend graph integrated -->
+  <rect x="143" y="70" width="12" height="90" rx="6" fill="url(#gradient)"/>
+
+  <!-- Middle bar of H with ascending trend line -->
+  <path d="M77 110 L85 118 L95 108 L105 115 L115 105 L125 110 L135 100 L143 105"
+        stroke="url(#gradient)"
+        stroke-width="10"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"/>
+
+  <!-- Trend points (data visualization accent) -->
+  <circle cx="85" cy="118" r="4" fill="#0ea5e9"/>
+  <circle cx="105" cy="115" r="4" fill="#3b82f6"/>
+  <circle cx="125" cy="110" r="4" fill="#8b5cf6"/>
+  <circle cx="135" cy="100" r="4" fill="#a855f7"/>
+
+  <!-- Chat bubble tail accent -->
+  <path d="M85 160 L95 175 L95 160" fill="url(#gradient)" opacity="0.15"/>
+</svg>

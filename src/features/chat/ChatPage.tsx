@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, Menu } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
@@ -25,6 +25,7 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<number | undefined>()
   const [currentStatus, setCurrentStatus] = useState<string>('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -280,12 +281,33 @@ const ChatPage = () => {
         currentConversationId={conversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col w-full">
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-sm font-bold text-white">H</span>
+            </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Harena
+            </span>
+          </div>
+        </div>
+
+        {/* Chat content */}
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="flex-1 overflow-y-auto px-4 py-6 pt-2">
         {messages.length === 0 ? (
           <SuggestedQuestions onQuestionClick={handleQuestionClick} />
         ) : (
@@ -347,7 +369,7 @@ const ChatPage = () => {
         </div>
 
         {/* Input Area */}
-        <div className="bg-white px-4 py-4">
+        <div className="bg-white px-4 py-4 pb-safe">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
               <textarea

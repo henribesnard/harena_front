@@ -1,18 +1,9 @@
 import { BrowserRouter } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import AppRouter from './router'
 import { useTokenValidation } from './hooks/useTokenValidation'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-})
+import { queryClient } from './lib/queryClient'
 
 function AppContent() {
   // Vérifier la validité du token au démarrage et périodiquement
