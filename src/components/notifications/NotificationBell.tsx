@@ -3,6 +3,9 @@ import { Bell, Check, Trash2, X } from 'lucide-react'
 // import { useNotifications } from '../../hooks/useNotifications'
 // import { Notification } from '../../services/api/notificationsApi'
 
+// Type local pour les notifications (temporaire)
+type NotificationType = 'success' | 'warning' | 'alert' | 'info'
+
 const NotificationBell = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -11,9 +14,9 @@ const NotificationBell = () => {
   const notifications: any[] = []
   const unreadCount = 0
   const isLoading = false
-  const markAsRead = () => {}
+  const markAsRead = (_id: number) => {}
   const markAllAsRead = () => {}
-  const deleteNotification = () => {}
+  const deleteNotification = (_id: number) => {}
 
   // Fermer le dropdown si on clique en dehors
   useEffect(() => {
@@ -27,7 +30,7 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const getNotificationIcon = (type: Notification['type']) => {
+  const getNotificationIcon = (type: NotificationType) => {
     const iconClass = 'w-5 h-5'
     switch (type) {
       case 'success':
