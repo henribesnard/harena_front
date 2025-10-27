@@ -16,16 +16,8 @@ export const useBudgetProfile = () => {
     queryKey: ['budgetProfile'],
     queryFn: getBudgetProfile,
     staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error: any) => {
-      // Ne pas réessayer si c'est une 404 (profil non trouvé)
-      if (error?.response?.status === 404) {
-        return false
-      }
-      // Réessayer pour les autres erreurs (max 3 fois)
-      return failureCount < 3
-    },
-    // Ne pas considérer une 404 comme une erreur fatale
-    // Le composant gèrera l'affichage "pas de profil"
+    retry: false, // Ne pas réessayer en cas d'erreur (404 = pas de profil)
+    refetchOnMount: true, // Toujours refetch au montage du composant
   })
 }
 
