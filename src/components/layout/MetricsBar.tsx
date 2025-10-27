@@ -1,5 +1,6 @@
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { useCoreMetrics } from '../../hooks/useCoreMetrics'
+import NotificationBell from '../notifications/NotificationBell'
 
 const MetricsBar = () => {
   const { yoyExpenses, momExpenses, yoyIncome, momIncome, coverage } = useCoreMetrics()
@@ -61,10 +62,11 @@ const MetricsBar = () => {
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 overflow-hidden">
+    <div className="bg-white border-b border-gray-200 overflow-hidden relative z-40">
       <div className="w-full overflow-x-auto scrollbar-hide">
         {/* Desktop: center, Mobile: horizontal scroll */}
-        <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs py-2 sm:py-3 px-2 sm:px-4 min-w-max sm:min-w-0">
+        <div className="flex items-center justify-between gap-4 py-2 sm:py-3 px-2 sm:px-4">
+          <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs flex-1 min-w-max sm:min-w-0 overflow-x-auto scrollbar-hide">
           {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
             <MetricBadge
@@ -93,9 +95,6 @@ const MetricsBar = () => {
             />
           )}
 
-          {/* Divider */}
-          <div className="w-px h-4 bg-gray-300 flex-shrink-0"></div>
-
           {/* YoY Expenses */}
           {yoyExpenses.data && (
             <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-shrink-0">
@@ -117,6 +116,12 @@ const MetricsBar = () => {
               </span>
             </div>
           )}
+          </div>
+
+          {/* Notification Bell - Always visible on the right */}
+          <div className="flex-shrink-0">
+            <NotificationBell />
+          </div>
         </div>
       </div>
     </div>

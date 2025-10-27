@@ -1,14 +1,15 @@
-import { MessageSquare, Plus, Loader2, Clock, LogOut, ChevronDown } from 'lucide-react'
+import { MessageSquare, Plus, Loader2, Clock, LogOut, ChevronDown, LayoutDashboard, Settings } from 'lucide-react'
 import { useConversationHistory, ConversationHistoryItem } from '../../hooks/useConversationHistory'
 import { useAuthStore } from '../../stores/authStore'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface ConversationSidebarProps {
   currentConversationId?: number
-  onSelectConversation: (conversationId: number) => void
-  onNewConversation: () => void
+  onSelectConversation?: (conversationId: number) => void
+  onNewConversation?: () => void
   open: boolean
   onClose: () => void
 }
@@ -22,10 +23,28 @@ const ConversationSidebar = ({
 }: ConversationSidebarProps) => {
   const { data: conversations, isLoading, error } = useConversationHistory()
   const { user, logout } = useAuthStore()
+  const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  // Default handlers if not provided
+  const handleNewConversation = () => {
+    if (onNewConversation) {
+      onNewConversation()
+    } else {
+      navigate('/chat')
+    }
+  }
+
+  const handleSelectConversation = (convId: number) => {
+    if (onSelectConversation) {
+      onSelectConversation(convId)
+    } else {
+      navigate(`/chat?conversation=${convId}`)
+    }
+  }
+
+    useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false)
@@ -91,7 +110,7 @@ const ConversationSidebar = ({
       {/* New Conversation Button */}
       <div className="p-3">
         <button
-          onClick={onNewConversation}
+          onClick={handleNewConversation}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -128,7 +147,7 @@ const ConversationSidebar = ({
                 key={conv.id}
                 conversation={conv}
                 isActive={conv.id === currentConversationId}
-                onClick={() => onSelectConversation(conv.id)}
+                onClick={() => handleSelectConversation(conv.id)}
               />
             ))}
           </div>
@@ -156,6 +175,27 @@ const ConversationSidebar = ({
         {/* User Dropdown */}
         {dropdownOpen && (
           <div className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+            <button
+              onClick={() => {
+                navigate('/user-dashboard')
+                setDropdownOpen(false)
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Tableau de bord</span>
+            </button>
+            <button
+              onClick={() => {
+                navigate('/configuration')
+                setDropdownOpen(false)
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Configuration</span>
+            </button>
+            <div className="border-t border-gray-200 my-1"></div>
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"

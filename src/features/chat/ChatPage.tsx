@@ -275,35 +275,7 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="flex h-full">
-      {/* Conversation Sidebar */}
-      <ConversationSidebar
-        currentConversationId={conversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col w-full">
-        {/* Mobile Menu Button */}
-        <div className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-sm font-bold text-white">H</span>
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Harena
-            </span>
-          </div>
-        </div>
+    <div className="flex-1 flex flex-col w-full h-full">
 
         {/* Chat content */}
         {/* Messages Area */}
@@ -401,7 +373,6 @@ const ChatPage = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { metricsAPI } from '../../services/metricsApi';
+import { coreMetricsApi } from '../../services/api/coreMetricsApi';
 import { MetricCard } from '../../components/MetricCard';
 import type { YoYExpensesData, MoMExpensesData, YoYIncomeData, MoMIncomeData, CoverageData } from '../../types/metrics';
 
@@ -22,11 +22,11 @@ const MetricsDashboard = () => {
       setError(null);
 
       const [yoyExp, momExp, yoyInc, momInc, cov] = await Promise.all([
-        metricsAPI.getYoYExpenses(),
-        metricsAPI.getMoMExpenses(),
-        metricsAPI.getYoYIncome(),
-        metricsAPI.getMoMIncome(),
-        metricsAPI.getCoverage()
+        coreMetricsApi.getYoYExpenses(),
+        coreMetricsApi.getMoMExpenses(),
+        coreMetricsApi.getYoYIncome(),
+        coreMetricsApi.getMoMIncome(),
+        coreMetricsApi.getCoverage()
       ]);
 
       setYoyExpenses(yoyExp);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { metricsAPI } from '../../services/metricsApi';
+import { coreMetricsApi } from '../../services/api/coreMetricsApi';
 import { MetricCard } from '../../components/MetricCard';
 import type { YoYQueryParams, MoMQueryParams, CoverageQueryParams } from '../../types/metrics';
 
@@ -19,19 +19,19 @@ const CustomMetrics = () => {
       let data;
       switch (metricType) {
         case 'yoy_expenses':
-          data = await metricsAPI.getYoYExpenses(params);
+          data = await coreMetricsApi.getYoYExpenses();
           break;
         case 'mom_expenses':
-          data = await metricsAPI.getMoMExpenses(params);
+          data = await coreMetricsApi.getMoMExpenses();
           break;
         case 'yoy_income':
-          data = await metricsAPI.getYoYIncome(params);
+          data = await coreMetricsApi.getYoYIncome();
           break;
         case 'mom_income':
-          data = await metricsAPI.getMoMIncome(params);
+          data = await coreMetricsApi.getMoMIncome();
           break;
         case 'coverage':
-          data = await metricsAPI.getCoverage(params);
+          data = await coreMetricsApi.getCoverage();
           break;
       }
       setResult(data);
