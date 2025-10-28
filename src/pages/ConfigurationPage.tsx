@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Settings, DollarSign, Bell, Palette, RotateCcw } from 'lucide-react'
+import { Settings, DollarSign, Bell, Palette, RotateCcw, Building2 } from 'lucide-react'
 import { useUserPreferences } from '../hooks/useUserPreferences'
+import { BankingSettingsTab } from '../components/banking/BankingSettingsTab'
 
 const ConfigurationPage = () => {
   const { preferences, isLoading, updatePreferences, resetPreferences, isUpdating, isResetting } = useUserPreferences()
 
-  const [activeTab, setActiveTab] = useState<'budget' | 'display' | 'notifications'>('budget')
+  const [activeTab, setActiveTab] = useState<'budget' | 'banking' | 'display' | 'notifications'>('budget')
 
   // États locaux pour les formulaires
   const [budgetSettings, setBudgetSettings] = useState({
@@ -85,6 +86,17 @@ const ConfigurationPage = () => {
             >
               <DollarSign className="w-4 h-4" />
               <span>Budget</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('banking')}
+              className={`flex items-center space-x-2 px-4 sm:px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'banking'
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Comptes bancaires</span>
             </button>
             <button
               onClick={() => setActiveTab('display')}
@@ -214,6 +226,9 @@ const ConfigurationPage = () => {
               </div>
             </div>
           )}
+
+          {/* Banking Settings */}
+          {activeTab === 'banking' && <BankingSettingsTab />}
 
           {/* Display Settings */}
           {activeTab === 'display' && (
