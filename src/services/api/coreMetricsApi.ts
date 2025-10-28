@@ -15,7 +15,13 @@ class CoreMetricsAPI {
   private baseURL: string
 
   constructor() {
-    this.baseURL = `${SERVICES.METRIC.baseURL}${SERVICES.METRIC.apiV1}/metrics`
+    // Si baseURL commence par /api, ne pas ajouter apiV1 (déjà inclus)
+    const base = SERVICES.METRIC.baseURL
+    if (base.startsWith('/api')) {
+      this.baseURL = `${base}/metrics`
+    } else {
+      this.baseURL = `${base}${SERVICES.METRIC.apiV1}/metrics`
+    }
   }
 
   private getAuthHeaders(): HeadersInit {

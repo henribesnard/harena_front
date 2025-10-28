@@ -50,6 +50,12 @@ export const SERVICES = {
 export const buildServiceURL = (service: keyof typeof SERVICES, path: string): string => {
   const config = SERVICES[service]
   const cleanPath = path.startsWith('/') ? path : `/${path}`
+
+  // Si baseURL commence par /api, ne pas ajouter apiV1 (déjà inclus)
+  if (config.baseURL.startsWith('/api')) {
+    return `${config.baseURL}${cleanPath}`
+  }
+
   return `${config.baseURL}${config.apiV1}${cleanPath}`
 }
 
