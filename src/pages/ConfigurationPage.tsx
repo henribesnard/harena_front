@@ -10,11 +10,11 @@ const ConfigurationPage = () => {
 
   // États locaux pour les formulaires
   const [budgetSettings, setBudgetSettings] = useState({
-    months_analysis: preferences?.budget_settings?.months_analysis || 12,
-    fixed_charge_min_occurrences: preferences?.budget_settings?.fixed_charge_min_occurrences || 5,
-    fixed_charge_max_variance: preferences?.budget_settings?.fixed_charge_max_variance || 20,
-    fixed_charge_min_amount: preferences?.budget_settings?.fixed_charge_min_amount || 10,
-    account_selection: preferences?.budget_settings?.account_selection || {
+    months_analysis: 12,
+    fixed_charge_min_occurrences: 5,
+    fixed_charge_max_variance: 20,
+    fixed_charge_min_amount: 10,
+    account_selection: {
       mode: 'all' as const,
       excluded_types: [],
       included_accounts: []
@@ -25,18 +25,29 @@ const ConfigurationPage = () => {
   useEffect(() => {
     if (preferences?.budget_settings) {
       setBudgetSettings({
-        months_analysis: preferences.budget_settings.months_analysis,
-        fixed_charge_min_occurrences: preferences.budget_settings.fixed_charge_min_occurrences,
-        fixed_charge_max_variance: preferences.budget_settings.fixed_charge_max_variance,
-        fixed_charge_min_amount: preferences.budget_settings.fixed_charge_min_amount,
-        account_selection: preferences.budget_settings.account_selection,
+        months_analysis: preferences.budget_settings.months_analysis ?? 12,
+        fixed_charge_min_occurrences: preferences.budget_settings.fixed_charge_min_occurrences ?? 5,
+        // Convertir de décimal (0.20) à pourcentage (20) pour l'affichage
+        fixed_charge_max_variance: preferences.budget_settings.fixed_charge_max_variance
+          ? preferences.budget_settings.fixed_charge_max_variance * 100
+          : 20,
+        fixed_charge_min_amount: preferences.budget_settings.fixed_charge_min_amount ?? 10,
+        account_selection: preferences.budget_settings.account_selection ?? {
+          mode: 'all' as const,
+          excluded_types: [],
+          included_accounts: []
+        },
       })
     }
   }, [preferences])
 
   const handleSaveBudgetSettings = () => {
     updatePreferences({
-      budget_settings: budgetSettings,
+      budget_settings: {
+        ...budgetSettings,
+        // Convertir de pourcentage (20) à décimal (0.20) pour la sauvegarde
+        fixed_charge_max_variance: budgetSettings.fixed_charge_max_variance / 100,
+      },
     })
   }
 
