@@ -90,7 +90,12 @@ export const useAccountPreferences = () => {
 
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      // Budget profiling service
       queryClient.invalidateQueries({ queryKey: ['budgetProfile'] })
+      queryClient.invalidateQueries({ queryKey: ['fixedCharges'] })
+      queryClient.invalidateQueries({ queryKey: ['monthlyAggregates'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
+      // Metric service
       queryClient.invalidateQueries({ queryKey: ['coreMetrics'] })
       queryClient.invalidateQueries({ queryKey: ['yoy-expenses'] })
       queryClient.invalidateQueries({ queryKey: ['mom-expenses'] })
@@ -118,7 +123,12 @@ export const useAccountPreferences = () => {
 
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      // Budget profiling service
       queryClient.invalidateQueries({ queryKey: ['budgetProfile'] })
+      queryClient.invalidateQueries({ queryKey: ['fixedCharges'] })
+      queryClient.invalidateQueries({ queryKey: ['monthlyAggregates'] })
+      queryClient.invalidateQueries({ queryKey: ['categoryBreakdown'] })
+      // Metric service
       queryClient.invalidateQueries({ queryKey: ['coreMetrics'] })
       queryClient.invalidateQueries({ queryKey: ['yoy-expenses'] })
       queryClient.invalidateQueries({ queryKey: ['mom-expenses'] })
