@@ -3,8 +3,8 @@ import {
   getUserPreferences,
   updateUserPreferences,
   resetUserPreferences,
-  UserPreferences,
 } from '../services/api/userPreferencesApi'
+import type { UserPreferences } from '../types/preferences'
 import toast from 'react-hot-toast'
 
 export const useUserPreferences = () => {
@@ -18,7 +18,15 @@ export const useUserPreferences = () => {
   const updateMutation = useMutation({
     mutationFn: updateUserPreferences,
     onSuccess: () => {
+      // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      queryClient.invalidateQueries({ queryKey: ['budgetProfile'] })
+      queryClient.invalidateQueries({ queryKey: ['coreMetrics'] })
+      queryClient.invalidateQueries({ queryKey: ['yoy-expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['mom-expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['yoy-income'] })
+      queryClient.invalidateQueries({ queryKey: ['mom-income'] })
+      queryClient.invalidateQueries({ queryKey: ['coverage'] })
       toast.success('Préférences mises à jour avec succès')
     },
     onError: (error: any) => {
@@ -29,7 +37,15 @@ export const useUserPreferences = () => {
   const resetMutation = useMutation({
     mutationFn: resetUserPreferences,
     onSuccess: () => {
+      // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      queryClient.invalidateQueries({ queryKey: ['budgetProfile'] })
+      queryClient.invalidateQueries({ queryKey: ['coreMetrics'] })
+      queryClient.invalidateQueries({ queryKey: ['yoy-expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['mom-expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['yoy-income'] })
+      queryClient.invalidateQueries({ queryKey: ['mom-income'] })
+      queryClient.invalidateQueries({ queryKey: ['coverage'] })
       toast.success('Préférences réinitialisées aux valeurs par défaut')
     },
     onError: (error: any) => {

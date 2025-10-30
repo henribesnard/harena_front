@@ -1,39 +1,24 @@
 import axios from 'axios'
 import { useAuthStore } from '../../stores/authStore'
+import type {
+  AccountSelection,
+  BudgetSettings,
+  DisplaySettings,
+  NotificationSettings,
+  UserPreferences
+} from '../../types/preferences'
 
-const BUDGET_API_BASE = import.meta.env.VITE_BUDGET_PROFILING_API_URL || 'http://localhost:3006/api/v1/budget'
-// S'assurer que l'URL de base se termine bien par /api/v1/budget
-const BUDGET_API = BUDGET_API_BASE.endsWith('/api/v1/budget')
-  ? BUDGET_API_BASE
-  : `${BUDGET_API_BASE}/api/v1/budget`
+// Utiliser le USER_SERVICE pour les préférences utilisateur
+const USER_API_BASE = import.meta.env.VITE_USER_API_URL || 'http://localhost:3000/api/v1'
+const USER_API = USER_API_BASE.endsWith('/api/v1')
+  ? USER_API_BASE
+  : `${USER_API_BASE}/api/v1`
 
-export interface BudgetSettings {
-  months_analysis: number
-  fixed_charge_min_occurrences: number
-  fixed_charge_max_variance: number
-  fixed_charge_min_amount: number
-}
-
-export interface DisplaySettings {
-  theme?: 'light' | 'dark' | 'auto'
-  language?: string
-  currency?: string
-}
-
-export interface NotificationSettings {
-  email_notifications?: boolean
-  push_notifications?: boolean
-  alert_threshold?: number
-}
-
-export interface UserPreferences {
-  budget_settings: BudgetSettings
-  display_settings?: DisplaySettings
-  notifications_settings?: NotificationSettings
-}
+// Export AccountSelection for convenience
+export type { AccountSelection }
 
 const api = axios.create({
-  baseURL: BUDGET_API,
+  baseURL: USER_API,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -66,25 +51,41 @@ api.interceptors.response.use(
 )
 
 /**
- * Récupère les préférences de l'utilisateur
+ * Récupère les préférences de l'utilisateur depuis /users/me
  */
 export const getUserPreferences = async (): Promise<UserPreferences> => {
-  const { data } = await api.get<UserPreferences>('/settings')
-  return data
+  const { data } = await api.get('/users/me')
+  // L'endpoint retourne l'utilisateur complet, on extrait juste les preferences
+  return data.preferences
 }
 
 /**
  * Met à jour les préférences de l'utilisateur (mise à jour partielle)
  */
 export const updateUserPreferences = async (preferences: Partial<UserPreferences>): Promise<UserPreferences> => {
-  const { data } = await api.put<UserPreferences>('/settings', preferences)
-  return data
+  const { data } = await api.put('/users/me', { preferences })
+  // L'endpoint retourne l'utilisateur complet, on extrait juste les preferences
+  return data.preferences
 }
 
 /**
  * Réinitialise les préférences aux valeurs par défaut
+ * TODO: Implémenter côté backend si nécessaire
  */
 export const resetUserPreferences = async (): Promise<UserPreferences> => {
-  const { data } = await api.post<UserPreferences>('/settings/reset')
-  return data
+  // Pour l'instant, on envoie les valeurs par défaut
+  const defaultPreferences: UserPreferences = {
+    budget_settings: {
+      months_analysis: 12,
+      fixed_charge_min_occurrences: 5,
+      fixed_charge_max_variance: 0.2,
+      fixed_charge_min_amount: 10,
+      account_selection: {
+        mode: 'all',
+        excluded_types: [],
+        included_accounts: []
+      }
+    }
+  }
+  return updateUserPreferences(defaultPreferences)
 }

@@ -14,6 +14,11 @@ const ConfigurationPage = () => {
     fixed_charge_min_occurrences: preferences?.budget_settings?.fixed_charge_min_occurrences || 5,
     fixed_charge_max_variance: preferences?.budget_settings?.fixed_charge_max_variance || 20,
     fixed_charge_min_amount: preferences?.budget_settings?.fixed_charge_min_amount || 10,
+    account_selection: preferences?.budget_settings?.account_selection || {
+      mode: 'all' as const,
+      excluded_types: [],
+      included_accounts: []
+    },
   })
 
   // Mettre à jour les états locaux quand les préférences sont chargées
@@ -24,6 +29,7 @@ const ConfigurationPage = () => {
         fixed_charge_min_occurrences: preferences.budget_settings.fixed_charge_min_occurrences,
         fixed_charge_max_variance: preferences.budget_settings.fixed_charge_max_variance,
         fixed_charge_min_amount: preferences.budget_settings.fixed_charge_min_amount,
+        account_selection: preferences.budget_settings.account_selection,
       })
     }
   }, [preferences])

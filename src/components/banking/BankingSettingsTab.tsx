@@ -8,11 +8,22 @@ import { Building2, Loader2 } from 'lucide-react'
 import { BankConnectionButton } from './BankConnectionButton'
 import { BankItemCard } from './BankItemCard'
 import { useBankItems } from '@/hooks/useBankItems'
+import { useBankAccounts } from '@/hooks/useBankAccounts'
+import { useAccountPreferences } from '@/hooks/useAccountPreferences'
+import { AccountFilterSettings } from '../settings/AccountFilterSettings'
 
 export const BankingSettingsTab: React.FC = () => {
   const { items, isLoading, deleteItem } = useBankItems()
+  const { accounts, isLoading: accountsLoading } = useBankAccounts()
+  const {
+    accountSelection,
+    updatePreferences,
+    resetPreferences,
+    isLoading: preferencesLoading,
+    isUpdating
+  } = useAccountPreferences()
 
-  if (isLoading) {
+  if (isLoading || accountsLoading || preferencesLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -81,6 +92,24 @@ export const BankingSettingsTab: React.FC = () => {
             <li>• Vous pouvez déconnecter un compte bancaire à tout moment</li>
           </ul>
         </div>
+
+        {/* Section de filtrage des comptes */}
+        {accounts.length > 0 && (
+          <>
+            <div className="pt-6 border-t-2 border-gray-300">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Filtrage des comptes</h2>
+              <p className="text-gray-600 mb-6">
+                Choisissez quels comptes inclure dans vos calculs budgétaires et métriques
+              </p>
+              <AccountFilterSettings
+                accounts={accounts}
+                currentSelection={accountSelection}
+                onSave={updatePreferences}
+                onReset={resetPreferences}
+              />
+            </div>
+          </>
+        )}
       </div>
     </>
   )

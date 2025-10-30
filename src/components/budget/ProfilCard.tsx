@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Target, AlertCircle } from 'lucide-react'
 import type { BudgetProfile } from '../../types/budgetProfiling'
+import { AccountFilterBadge } from '../banking/AccountFilterBadge'
 
 interface ProfilCardProps {
   profile: BudgetProfile | undefined
@@ -92,7 +93,7 @@ const ProfilCard = ({ profile, isLoading }: ProfilCardProps) => {
     >
       {/* Gradient Header */}
       <div className={`bg-gradient-to-r ${segmentConfig.gradient} p-8 text-white`}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-4">
             <div className="text-5xl">{segmentConfig.icon}</div>
             <div>
@@ -107,6 +108,15 @@ const ProfilCard = ({ profile, isLoading }: ProfilCardProps) => {
             <div className="text-sm text-white/90">Score Santé</div>
           </div>
         </div>
+
+        {/* Accounts Used Badge */}
+        {profile.accounts_used && (
+          <div className="flex justify-end">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <AccountFilterBadge accountsUsed={profile.accounts_used} variant="compact" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Metrics Grid */}

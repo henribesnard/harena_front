@@ -2,6 +2,29 @@
  * Types pour le Budget Profiling Service
  */
 
+/**
+ * Détails d'un compte utilisé dans les calculs
+ */
+export interface AccountUsedDetails {
+  bridge_account_id: number
+  account_name: string
+  account_type: 'checking' | 'card'
+  balance: number
+  currency: string
+}
+
+/**
+ * Informations sur les comptes utilisés dans les calculs budgétaires
+ * Retourné par GET /api/v1/budget/profile et POST /api/v1/budget/profile/analyze
+ */
+export interface AccountsUsed {
+  total_accounts: number          // Nombre total de comptes (tous types)
+  eligible_accounts: number       // Nombre de comptes éligibles (checking + card)
+  used_accounts: number           // Nombre de comptes utilisés dans les calculs
+  selection_mode: 'all' | 'exclude_types' | 'include_specific'
+  accounts: AccountUsedDetails[]  // Liste détaillée des comptes utilisés
+}
+
 export interface BudgetProfile {
   user_id?: number
   user_segment: 'budget_serré' | 'équilibré' | 'confortable'
@@ -18,6 +41,7 @@ export interface BudgetProfile {
   last_analyzed_at: string
   created_at?: string
   updated_at?: string
+  accounts_used?: AccountsUsed    // Informations sur les comptes utilisés dans les calculs
 }
 
 export interface FixedCharge {
@@ -45,7 +69,9 @@ export interface CategoryBreakdown {
   [category: string]: number
 }
 
-export interface AnalyzeProfileResponse extends BudgetProfile {}
+export interface AnalyzeProfileResponse extends BudgetProfile {
+  accounts_used?: AccountsUsed    // Hérite de BudgetProfile
+}
 
 export interface HealthScore {
   score: number

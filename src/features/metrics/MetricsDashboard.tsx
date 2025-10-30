@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { coreMetricsApi } from '../../services/api/coreMetricsApi';
 import { MetricCard } from '../../components/MetricCard';
 import type { YoYExpensesData, MoMExpensesData, YoYIncomeData, MoMIncomeData, CoverageData } from '../../types/metrics';
+import { AccountFilterBadge } from '../../components/banking/AccountFilterBadge';
 
 const MetricsDashboard = () => {
   const [yoyExpenses, setYoyExpenses] = useState<YoYExpensesData | null>(null);
@@ -54,9 +55,17 @@ const MetricsDashboard = () => {
     );
   }
 
+  // Récupérer accounts_used depuis la première métrique disponible
+  const accountsUsed = yoyExpenses?.accounts_used || momExpenses?.accounts_used || yoyIncome?.accounts_used || momIncome?.accounts_used || coverage?.accounts_used;
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Métriques Financières</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Métriques Financières</h1>
+        {accountsUsed && !loading && (
+          <AccountFilterBadge accountsUsed={accountsUsed} variant="compact" />
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <MetricCard

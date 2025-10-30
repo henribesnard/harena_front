@@ -1,4 +1,15 @@
+import { useNavigate } from 'react-router-dom'
+import { useAccountsUsed } from '@/hooks/useAccountsUsed'
+import { AccountsUsedCard } from '@/components/budget/AccountsUsedCard'
+
 const DashboardPage = () => {
+  const navigate = useNavigate()
+  const { accountsUsed, isLoading: accountsLoading } = useAccountsUsed()
+
+  const handleConfigureAccounts = () => {
+    navigate('/configuration?tab=banking')
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -7,6 +18,14 @@ const DashboardPage = () => {
           Bienvenue sur votre tableau de bord Harena
         </p>
       </div>
+
+      {/* Section des comptes utilisés */}
+      {!accountsLoading && accountsUsed && (
+        <AccountsUsedCard
+          accountsUsed={accountsUsed}
+          onConfigureClick={handleConfigureAccounts}
+        />
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

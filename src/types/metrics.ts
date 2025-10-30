@@ -1,5 +1,7 @@
 // Types pour les métriques Harena
 
+import { AccountsUsed } from './budgetProfiling'
+
 export interface Variation {
   montant: number;
   pourcentage: number;
@@ -33,6 +35,7 @@ export interface YoYExpensesData {
   affichage: Affichage;
   filtres: Filtres;
   mise_a_jour: string;
+  accounts_used?: AccountsUsed;
 }
 
 // MoM Expenses
@@ -54,6 +57,7 @@ export interface MoMExpensesData {
   affichage: Affichage;
   filtres: Filtres;
   mise_a_jour: string;
+  accounts_used?: AccountsUsed;
 }
 
 // YoY Income
@@ -71,6 +75,7 @@ export interface YoYIncomeData {
   affichage: Affichage;
   filtres: Filtres;
   mise_a_jour: string;
+  accounts_used?: AccountsUsed;
 }
 
 // MoM Income
@@ -92,6 +97,7 @@ export interface MoMIncomeData {
   affichage: Affichage;
   filtres: Filtres;
   mise_a_jour: string;
+  accounts_used?: AccountsUsed;
 }
 
 // Coverage Rate
@@ -109,6 +115,7 @@ export interface CoverageData {
   taux_couverture: number;
   affichage: Affichage;
   mise_a_jour: string;
+  accounts_used?: AccountsUsed;
 }
 
 // Generic API Response

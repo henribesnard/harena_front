@@ -1,5 +1,7 @@
 // Types pour les 5 métriques core de Harena
 
+import { AccountsUsed } from './budgetProfiling'
+
 export interface Variation {
   montant: number
   pourcentage: number
@@ -31,6 +33,7 @@ export interface YoYExpensesData {
     marchand: string | null
   }
   mise_a_jour: string
+  accounts_used?: AccountsUsed  // Informations sur les comptes utilisés dans les calculs
 }
 
 // MoM Expenses
@@ -55,6 +58,7 @@ export interface MoMExpensesData {
     marchand: string | null
   }
   mise_a_jour: string
+  accounts_used?: AccountsUsed  // Informations sur les comptes utilisés dans les calculs
 }
 
 // YoY Income
@@ -75,6 +79,7 @@ export interface YoYIncomeData {
     marchand: string | null
   }
   mise_a_jour: string
+  accounts_used?: AccountsUsed  // Informations sur les comptes utilisés dans les calculs
 }
 
 // MoM Income
@@ -99,6 +104,7 @@ export interface MoMIncomeData {
     marchand: string | null
   }
   mise_a_jour: string
+  accounts_used?: AccountsUsed  // Informations sur les comptes utilisés dans les calculs
 }
 
 // Coverage Rate
@@ -116,6 +122,7 @@ export interface CoverageData {
   taux_couverture: number
   affichage: Affichage
   mise_a_jour: string
+  accounts_used?: AccountsUsed  // Informations sur les comptes utilisés dans les calculs
 }
 
 // Generic API Response
