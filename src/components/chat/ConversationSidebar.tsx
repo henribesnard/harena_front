@@ -96,7 +96,7 @@ const ConversationSidebar = ({
         lg:translate-x-0
       `}>
       {/* Logo Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-lg font-bold text-white">H</span>
@@ -155,7 +155,7 @@ const ConversationSidebar = ({
       </div>
 
       {/* User Profile Footer */}
-      <div className="border-t border-gray-200 p-3" ref={dropdownRef}>
+      <div className="p-3" ref={dropdownRef}>
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"

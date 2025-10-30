@@ -1,8 +1,12 @@
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Menu } from 'lucide-react'
 import { useCoreMetrics } from '../../hooks/useCoreMetrics'
 import NotificationBell from '../notifications/NotificationBell'
 
-const MetricsBar = () => {
+interface MetricsBarProps {
+  onMenuClick?: () => void
+}
+
+const MetricsBar = ({ onMenuClick }: MetricsBarProps) => {
   const { yoyExpenses, momExpenses, yoyIncome, momIncome, coverage } = useCoreMetrics()
 
   // Show loading if any metric is loading
@@ -62,11 +66,20 @@ const MetricsBar = () => {
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 overflow-hidden relative z-40">
+    <div className="sticky top-0 bg-white overflow-hidden z-40">
       <div className="w-full overflow-x-auto scrollbar-hide">
         {/* Desktop: center, Mobile: horizontal scroll */}
         <div className="flex items-center justify-between gap-4 py-2 sm:py-3 px-2 sm:px-4">
-          <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs flex-1 min-w-max sm:min-w-0 overflow-x-auto scrollbar-hide">
+          {/* Mobile Menu Button - Only visible on mobile */}
+          {onMenuClick && (
+            <button
+              onClick={onMenuClick}
+              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+          <div className="flex items-center justify-start lg:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs flex-1 overflow-x-auto scrollbar-hide">
           {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
             <MetricBadge

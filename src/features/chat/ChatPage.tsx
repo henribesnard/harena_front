@@ -341,7 +341,7 @@ const ChatPage = () => {
         </div>
 
         {/* Input Area */}
-        <div className="bg-white px-4 py-4 pb-safe">
+        <div className="px-4 py-4 pb-safe">
           <div className="max-w-3xl mx-auto">
             <div className="relative">
               <textarea
@@ -350,7 +350,7 @@ const ChatPage = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="Posez votre question..."
                 rows={1}
-                className="w-full px-4 py-3.5 pr-12 rounded-2xl border border-gray-300 focus:outline-none focus:border-gray-400 resize-none transition-all duration-200 bg-white shadow-sm"
+                className="w-full px-4 py-3.5 pr-12 rounded-2xl border border-gray-300 focus:outline-none focus:border-purple-400 resize-none transition-all duration-200 bg-white shadow-md"
                 style={{ minHeight: '52px', maxHeight: '120px' }}
               />
               <motion.button
@@ -358,7 +358,7 @@ const ChatPage = () => {
                 disabled={!input.trim() || isLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`absolute right-2 bottom-2 flex items-center justify-center w-9 h-9 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                   input.trim() && !isLoading
                     ? 'bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
                     : 'bg-gray-800 hover:bg-gray-900'

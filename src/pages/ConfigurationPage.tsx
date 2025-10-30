@@ -15,9 +15,9 @@ const ConfigurationPage = () => {
     fixed_charge_max_variance: 20,
     fixed_charge_min_amount: 10,
     account_selection: {
-      mode: 'all' as const,
-      excluded_types: [],
-      included_accounts: []
+      mode: 'all' as 'all' | 'exclude_types' | 'include_specific',
+      excluded_types: [] as ('checking' | 'card')[],
+      included_accounts: [] as number[]
     },
   })
 
@@ -33,9 +33,9 @@ const ConfigurationPage = () => {
           : 20,
         fixed_charge_min_amount: preferences.budget_settings.fixed_charge_min_amount ?? 10,
         account_selection: preferences.budget_settings.account_selection ?? {
-          mode: 'all' as const,
-          excluded_types: [],
-          included_accounts: []
+          mode: 'all' as 'all' | 'exclude_types' | 'include_specific',
+          excluded_types: [] as ('checking' | 'card')[],
+          included_accounts: [] as number[]
         },
       })
     }

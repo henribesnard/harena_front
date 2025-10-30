@@ -66,6 +66,23 @@ export const AccountFilterSettings: React.FC<AccountFilterSettingsProps> = ({
     (acc) => acc.type === 'checking' || acc.type === 'card'
   )
 
+  // Nettoyer les IDs obsolètes (comptes qui n'existent plus)
+  useEffect(() => {
+    if (mode === 'include_specific' && includedAccounts.length > 0) {
+      const eligibleIds = eligibleAccounts.map(acc => acc.id)
+      const validIds = includedAccounts.filter(id => eligibleIds.includes(id))
+
+      // Si des IDs obsolètes sont détectés, les retirer silencieusement
+      if (validIds.length !== includedAccounts.length) {
+        console.log('🧹 Nettoyage des IDs obsolètes:', {
+          avant: includedAccounts,
+          après: validIds,
+          supprimés: includedAccounts.filter(id => !eligibleIds.includes(id))
+        })
+        setIncludedAccounts(validIds)
+      }
+    }
+  }, [mode, accounts, includedAccounts, eligibleAccounts])
 
   // Détecter les changements
   useEffect(() => {
@@ -200,10 +217,12 @@ export const AccountFilterSettings: React.FC<AccountFilterSettingsProps> = ({
         </div>
       )}
 
-      {mode === 'include_specific' && (
+      {mode === 'include_specific' && (() => {
+        const validSelectedCount = includedAccounts.filter(id => eligibleAccounts.some(acc => acc.id === id)).length
+        return (
         <div className="bg-gray-50 rounded-lg p-4">
           <h4 className="font-semibold text-gray-900 mb-3">
-            Comptes à inclure ({includedAccounts.length} sélectionné{includedAccounts.length > 1 ? 's' : ''})
+            Comptes à inclure ({validSelectedCount} sélectionné{validSelectedCount > 1 ? 's' : ''})
           </h4>
           <div className="space-y-2">
             {eligibleAccounts.map((account) => (
@@ -234,7 +253,8 @@ export const AccountFilterSettings: React.FC<AccountFilterSettingsProps> = ({
             </p>
           )}
         </div>
-      )}
+        )
+      })()}
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
