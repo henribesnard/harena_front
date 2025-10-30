@@ -91,10 +91,13 @@ export const useAccountPreferences = () => {
 
       // Déclencher automatiquement une nouvelle analyse du profil budgétaire
       console.log('🔄 Triggering budget profile reanalysis...')
-      analyzeBudgetProfile().catch(err => {
+      try {
+        await analyzeBudgetProfile()
+        console.log('✅ Budget profile analysis completed')
+      } catch (err) {
         console.error('⚠️ Budget analysis failed but preferences saved:', err)
         // Ne pas bloquer l'UX si l'analyse échoue
-      })
+      }
 
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
@@ -131,9 +134,12 @@ export const useAccountPreferences = () => {
 
       // Déclencher automatiquement une nouvelle analyse du profil budgétaire
       console.log('🔄 Triggering budget profile reanalysis after reset...')
-      analyzeBudgetProfile().catch(err => {
+      try {
+        await analyzeBudgetProfile()
+        console.log('✅ Budget profile analysis completed after reset')
+      } catch (err) {
         console.error('⚠️ Budget analysis failed but preferences reset:', err)
-      })
+      }
 
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })

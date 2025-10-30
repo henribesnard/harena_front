@@ -18,13 +18,16 @@ export const useUserPreferences = () => {
 
   const updateMutation = useMutation({
     mutationFn: updateUserPreferences,
-    onSuccess: () => {
+    onSuccess: async () => {
       // Déclencher automatiquement une nouvelle analyse du profil budgétaire
       console.log('🔄 Triggering budget profile reanalysis...')
-      analyzeBudgetProfile().catch(err => {
+      try {
+        await analyzeBudgetProfile()
+        console.log('✅ Budget profile analysis completed')
+      } catch (err) {
         console.error('⚠️ Budget analysis failed but preferences saved:', err)
         // Ne pas bloquer l'UX si l'analyse échoue
-      })
+      }
 
       // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
@@ -49,12 +52,15 @@ export const useUserPreferences = () => {
 
   const resetMutation = useMutation({
     mutationFn: resetUserPreferences,
-    onSuccess: () => {
+    onSuccess: async () => {
       // Déclencher automatiquement une nouvelle analyse du profil budgétaire
       console.log('🔄 Triggering budget profile reanalysis after reset...')
-      analyzeBudgetProfile().catch(err => {
+      try {
+        await analyzeBudgetProfile()
+        console.log('✅ Budget profile analysis completed after reset')
+      } catch (err) {
         console.error('⚠️ Budget analysis failed but preferences reset:', err)
-      })
+      }
 
       // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
