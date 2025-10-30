@@ -29,7 +29,9 @@ export const AccountFilterSettings: React.FC<AccountFilterSettingsProps> = ({
   onSave,
   onReset
 }) => {
-  const [mode, setMode] = useState(currentSelection.mode)
+  const [mode, setMode] = useState<'all' | 'exclude_types' | 'include_specific'>(
+    currentSelection.mode || 'all'
+  )
   const [excludedTypes, setExcludedTypes] = useState<Array<'checking' | 'card'>>(
     currentSelection.excluded_types || []
   )
