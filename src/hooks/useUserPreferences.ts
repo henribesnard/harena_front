@@ -4,6 +4,7 @@ import {
   updateUserPreferences,
   resetUserPreferences,
 } from '../services/api/userPreferencesApi'
+import { analyzeBudgetProfile } from '../services/api/budgetProfilingApi'
 import type { UserPreferences } from '../types/preferences'
 import toast from 'react-hot-toast'
 
@@ -18,6 +19,13 @@ export const useUserPreferences = () => {
   const updateMutation = useMutation({
     mutationFn: updateUserPreferences,
     onSuccess: () => {
+      // Déclencher automatiquement une nouvelle analyse du profil budgétaire
+      console.log('🔄 Triggering budget profile reanalysis...')
+      analyzeBudgetProfile().catch(err => {
+        console.error('⚠️ Budget analysis failed but preferences saved:', err)
+        // Ne pas bloquer l'UX si l'analyse échoue
+      })
+
       // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
       // Budget profiling service
@@ -42,6 +50,12 @@ export const useUserPreferences = () => {
   const resetMutation = useMutation({
     mutationFn: resetUserPreferences,
     onSuccess: () => {
+      // Déclencher automatiquement une nouvelle analyse du profil budgétaire
+      console.log('🔄 Triggering budget profile reanalysis after reset...')
+      analyzeBudgetProfile().catch(err => {
+        console.error('⚠️ Budget analysis failed but preferences reset:', err)
+      })
+
       // Invalider les préférences ET toutes les données calculées
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
       // Budget profiling service

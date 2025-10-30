@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { getUserPreferences, updateUserPreferences, resetUserPreferences } from '../services/api/userPreferencesApi'
+import { analyzeBudgetProfile } from '../services/api/budgetProfilingApi'
 import type { AccountSelection, UserPreferences } from '../types/preferences'
 import toast from 'react-hot-toast'
 
@@ -88,6 +89,13 @@ export const useAccountPreferences = () => {
 
       setPreferences(updated)
 
+      // Déclencher automatiquement une nouvelle analyse du profil budgétaire
+      console.log('🔄 Triggering budget profile reanalysis...')
+      analyzeBudgetProfile().catch(err => {
+        console.error('⚠️ Budget analysis failed but preferences saved:', err)
+        // Ne pas bloquer l'UX si l'analyse échoue
+      })
+
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
       // Budget profiling service
@@ -120,6 +128,12 @@ export const useAccountPreferences = () => {
       setIsUpdating(true)
       const updated = await resetUserPreferences()
       setPreferences(updated)
+
+      // Déclencher automatiquement une nouvelle analyse du profil budgétaire
+      console.log('🔄 Triggering budget profile reanalysis after reset...')
+      analyzeBudgetProfile().catch(err => {
+        console.error('⚠️ Budget analysis failed but preferences reset:', err)
+      })
 
       // Invalider toutes les queries dépendantes pour forcer le recalcul
       queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
