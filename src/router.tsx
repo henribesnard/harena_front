@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import LoginPage from './features/auth/LoginPage'
+import RegisterPage from './features/auth/RegisterPage'
 import ChatPage from './features/chat/ChatPage'
 import DashboardPage from './features/dashboard/DashboardPage'
 import BudgetProfilingPage from './pages/BudgetProfilingPage'
@@ -11,8 +12,9 @@ import UserDashboardPage from './pages/UserDashboardPage'
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Route publique */}
+      {/* Routes publiques */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* Routes protégées - Toutes utilisent MainLayout maintenant */}
       <Route element={<ProtectedRoute />}>

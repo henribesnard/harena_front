@@ -8,6 +8,7 @@ import SuggestedQuestions from '../../components/chat/SuggestedQuestions'
 import TypingIndicator from '../../components/chat/TypingIndicator'
 import StatusMessage from '../../components/chat/StatusMessage'
 import { useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 
 interface Message {
   id: string
@@ -20,6 +21,7 @@ const ChatPage = () => {
   const token = useAuthStore((state) => state.token)
   const userId = useAuthStore((state) => state.user?.id)
   const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -35,6 +37,17 @@ const ChatPage = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Load conversation from URL query parameter
+  useEffect(() => {
+    const conversationParam = searchParams.get('conversation')
+    if (conversationParam) {
+      const convId = parseInt(conversationParam, 10)
+      if (!isNaN(convId) && convId !== conversationId) {
+        handleSelectConversation(convId)
+      }
+    }
+  }, [searchParams])
 
   const handleNewConversation = () => {
     setMessages([])

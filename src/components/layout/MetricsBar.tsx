@@ -66,7 +66,7 @@ const MetricsBar = ({ onMenuClick }: MetricsBarProps) => {
   }
 
   return (
-    <div className="sticky top-0 bg-white overflow-hidden z-40">
+    <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
       <div className="w-full overflow-x-auto scrollbar-hide">
         {/* Desktop: center, Mobile: horizontal scroll */}
         <div className="flex items-center justify-between gap-4 py-2 sm:py-3 px-2 sm:px-4">

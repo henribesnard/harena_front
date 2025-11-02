@@ -192,6 +192,35 @@ export const api = {
       return response.json()
     },
 
+    register: async (userData: {
+      email: string
+      password: string
+      confirm_password: string
+      first_name?: string
+      last_name?: string
+    }) => {
+      const response = await fetch(buildServiceURL('USER', '/users/register'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+
+        // Handle Pydantic validation errors (422)
+        if (Array.isArray(error.detail)) {
+          const validationErrors = error.detail.map((err: any) => err.msg).join(', ')
+          throw new Error(validationErrors)
+        }
+
+        // Handle standard FastAPI errors
+        throw new Error(error.detail || 'Registration failed')
+      }
+      return response.json()
+    },
+
     getMe: async (token: string) => {
       const response = await fetch(buildServiceURL('USER', '/users/me'), {
         headers: {

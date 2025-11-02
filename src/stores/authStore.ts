@@ -13,6 +13,14 @@ interface User {
   is_superuser: boolean
 }
 
+interface RegisterData {
+  email: string
+  password: string
+  confirm_password: string
+  first_name?: string
+  last_name?: string
+}
+
 interface AuthState {
   user: User | null
   token: string | null
@@ -20,6 +28,7 @@ interface AuthState {
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
+  register: (userData: RegisterData) => Promise<void>
   logout: () => void
   fetchUser: () => Promise<void>
   clearError: () => void
@@ -68,6 +77,49 @@ export const useAuthStore = create<AuthState>()(
           console.log('React Query cache cleared after login')
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Erreur de connexion'
+          set({ error: errorMessage, isLoading: false, isAuthenticated: false })
+          throw error
+        }
+      },
+
+      register: async (userData: RegisterData) => {
+        set({ isLoading: true, error: null })
+        try {
+          // Créer l'utilisateur
+          await api.auth.register(userData)
+
+          // Automatiquement se connecter après l'inscription
+          const loginData = await api.auth.login(userData.email, userData.password)
+          const token = loginData.access_token
+
+          set({ token, isAuthenticated: true })
+
+          // Récupérer les infos de l'utilisateur
+          const userDataResponse = await api.auth.getMe(token)
+          console.log('User data received after registration:', userDataResponse)
+
+          // S'assurer que full_name existe
+          if (!userDataResponse.full_name) {
+            const firstName = userDataResponse.first_name || ''
+            const lastName = userDataResponse.last_name || ''
+            if (firstName && lastName) {
+              userDataResponse.full_name = `${firstName} ${lastName}`
+            } else if (firstName) {
+              userDataResponse.full_name = firstName
+            } else if (lastName) {
+              userDataResponse.full_name = lastName
+            } else {
+              userDataResponse.full_name = userDataResponse.email.split('@')[0]
+            }
+          }
+
+          set({ user: userDataResponse, isLoading: false })
+
+          // Invalider tout le cache React Query
+          queryClient.clear()
+          console.log('React Query cache cleared after registration')
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'inscription'
           set({ error: errorMessage, isLoading: false, isAuthenticated: false })
           throw error
         }
