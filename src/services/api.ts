@@ -188,7 +188,16 @@ export const api = {
         },
         body: formData,
       })
-      if (!response.ok) throw new Error('Login failed')
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Email ou mot de passe incorrect')
+        } else if (response.status === 422) {
+          throw new Error('Email ou mot de passe invalide')
+        }
+        throw new Error('Erreur lors de la connexion. Veuillez réessayer.')
+      }
+
       return response.json()
     },
 

@@ -68,18 +68,18 @@ const MetricsBar = ({ onMenuClick }: MetricsBarProps) => {
   return (
     <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
       <div className="w-full overflow-x-auto scrollbar-hide">
-        {/* Desktop: center, Mobile: horizontal scroll */}
-        <div className="flex items-center justify-between gap-4 py-2 sm:py-3 px-2 sm:px-4">
+        {/* Desktop: all metrics visible, Mobile: horizontal scroll */}
+        <div className="flex items-center justify-between py-2 px-4 min-w-max">
           {/* Mobile Menu Button - Only visible on mobile */}
           {onMenuClick && (
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+              className="lg:hidden p-1.5 rounded-md text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0 mr-2"
             >
               <Menu className="w-5 h-5" />
             </button>
           )}
-          <div className="flex items-center justify-start lg:justify-center gap-4 sm:gap-8 lg:gap-12 text-xs flex-1 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-center gap-3 lg:gap-4 xl:gap-5 text-xs flex-1">
           {/* Dépenses MoM - Plus pertinent que YoY */}
           {momExpenses.data && (
             <MetricBadge
