@@ -44,7 +44,7 @@ const MetricsBar = ({ onMenuClick }: MetricsBarProps) => {
     if (amount >= 1000) {
       return `${(amount / 1000).toFixed(1)}k€`
     }
-    return `${amount}€`
+    return `${Math.round(amount)}€`
   }
 
   const MetricBadge = ({ label, value, percent, isPositive }: { label: string; value: string; percent?: number; isPositive?: boolean }) => {
