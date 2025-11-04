@@ -38,6 +38,8 @@ export const BankConnectionButton: React.FC<BankConnectionButtonProps> = ({
     <button
       onClick={handleConnect}
       disabled={isConnecting}
+      aria-busy={isConnecting}
+      aria-label={isConnecting ? 'Connexion en cours' : label}
       className={`
         px-6 py-3 rounded-lg font-medium
         flex items-center gap-2

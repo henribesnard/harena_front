@@ -6,9 +6,12 @@
  * - sync_service (port 3004) pour la synchronisation des données
  */
 
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 import { SERVICES } from '@/config/services'
+import { ApiErrorResponse } from '@/types/api'
+import { logger } from '@/utils/logger'
+import toast from 'react-hot-toast'
 import {
   BridgeConnection,
   BankItem,
@@ -58,112 +61,91 @@ const enrichmentApi: AxiosInstance = axios.create({
 })
 
 // ============================================
-// INTERCEPTEURS - USER API
+// INTERCEPTEURS HELPER
 // ============================================
 
 /**
- * Intercepteur pour ajouter le token JWT aux requêtes user_service
+ * Unified request interceptor to add JWT token
  */
-userApi.interceptors.request.use(
-  (config) => {
-    const persistedAuth = localStorage.getItem('harena-auth')
-    const token = persistedAuth ? JSON.parse(persistedAuth).state.token : null
+const addAuthInterceptor = (instance: AxiosInstance) => {
+  instance.interceptors.request.use(
+    (config) => {
+      const persistedAuth = localStorage.getItem('harena-auth')
+      const token = persistedAuth ? JSON.parse(persistedAuth).state.token : null
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error)
+  )
+}
 
 /**
- * Intercepteur pour gérer les erreurs 401 (token expiré)
+ * Unified response interceptor for error handling
  */
-userApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn('Token expiré dans bankSyncApi (user) - Déconnexion')
-      const { logout } = useAuthStore.getState()
-      logout()
-      window.location.href = '/login'
+const addErrorInterceptor = (instance: AxiosInstance, serviceName: string) => {
+  instance.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError<ApiErrorResponse>) => {
+      const status = error.response?.status
+      const errorMessage = error.response?.data?.detail
+        || error.response?.data?.message
+        || error.message
+        || 'Une erreur est survenue'
+
+      // 401 - Token expired
+      if (status === 401) {
+        logger.warn(`Token expiré dans ${serviceName} - Déconnexion`)
+        const { logout } = useAuthStore.getState()
+        logout()
+        window.location.href = '/login'
+      }
+
+      // 403 - Access denied
+      if (status === 403) {
+        toast.error('Accès refusé')
+      }
+
+      // 404 - Not found
+      if (status === 404) {
+        logger.warn(`Ressource introuvable dans ${serviceName}`)
+      }
+
+      // 500+ - Server error
+      if (status && status >= 500) {
+        logger.error(`Erreur serveur dans ${serviceName}:`, errorMessage)
+        toast.error('Erreur serveur, veuillez réessayer plus tard')
+      }
+
+      logger.error(`API Error (${serviceName}):`, errorMessage, error.response?.data)
+
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
-  }
-)
+  )
+}
+
+// ============================================
+// INTERCEPTEURS - USER API
+// ============================================
+
+addAuthInterceptor(userApi)
+addErrorInterceptor(userApi, 'userApi')
 
 // ============================================
 // INTERCEPTEURS - SYNC API
 // ============================================
 
-/**
- * Intercepteur pour ajouter le token JWT aux requêtes sync_service
- */
-syncApi.interceptors.request.use(
-  (config) => {
-    const persistedAuth = localStorage.getItem('harena-auth')
-    const token = persistedAuth ? JSON.parse(persistedAuth).state.token : null
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-/**
- * Intercepteur pour gérer les erreurs 401 (token expiré)
- */
-syncApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn('Token expiré dans bankSyncApi (sync) - Déconnexion')
-      const { logout } = useAuthStore.getState()
-      logout()
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
+addAuthInterceptor(syncApi)
+addErrorInterceptor(syncApi, 'syncApi')
 
 // ============================================
 // INTERCEPTEURS - ENRICHMENT API
 // ============================================
 
-/**
- * Intercepteur pour ajouter le token JWT aux requêtes enrichment_service
- */
-enrichmentApi.interceptors.request.use(
-  (config) => {
-    const persistedAuth = localStorage.getItem('harena-auth')
-    const token = persistedAuth ? JSON.parse(persistedAuth).state.token : null
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
-
-/**
- * Intercepteur pour gérer les erreurs 401 (token expiré)
- */
-enrichmentApi.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn('Token expiré dans bankSyncApi (enrichment) - Déconnexion')
-      const { logout } = useAuthStore.getState()
-      logout()
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
+addAuthInterceptor(enrichmentApi)
+addErrorInterceptor(enrichmentApi, 'enrichmentApi')
 
 // ============================================
 // API SERVICE

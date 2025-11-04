@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import AppRouter from './router'
 import { useTokenValidation } from './hooks/useTokenValidation'
 import { queryClient } from './lib/queryClient'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 function AppContent() {
   // Vérifier la validité du token au démarrage et périodiquement
@@ -30,11 +31,13 @@ function AppContent() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Menu } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { Send, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
@@ -9,6 +9,7 @@ import TypingIndicator from '../../components/chat/TypingIndicator'
 import StatusMessage from '../../components/chat/StatusMessage'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
+import { logger } from '../../utils/logger'
 
 interface Message {
   id: string
@@ -61,9 +62,9 @@ const ChatPage = () => {
     setIsLoading(true)
 
     try {
-      console.log('Loading conversation:', convId)
+      logger.log('Loading conversation:', convId)
       const data = await api.conversation.getConversation(token, convId)
-      console.log('Conversation data:', data)
+      logger.log('Conversation data:', data)
 
       // Convertir les tours en messages
       const loadedMessages: Message[] = []
@@ -82,217 +83,146 @@ const ChatPage = () => {
         })
       }
 
-      console.log('Loaded messages:', loadedMessages)
+      logger.log('Loaded messages:', loadedMessages)
       setMessages(loadedMessages)
     } catch (error) {
-      console.error('Error loading conversation:', error)
+      logger.error('Error loading conversation:', error)
       setMessages([])
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Pas besoin d'useEffect ici, on invalidera directement après l'envoi du message
+  /**
+   * Unified function to send a message (eliminating duplication)
+   */
+  const sendMessage = useCallback(
+    async (messageContent: string) => {
+      if (!token || !userId || isLoading || !messageContent.trim()) return
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading || !token || !userId) return
+      logger.log('ChatPage - Sending message with userId:', userId)
 
-    console.log('ChatPage - Sending message with token:', token?.substring(0, 20) + '...')
-    console.log('ChatPage - userId:', userId)
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: messageContent,
+        timestamp: new Date(),
+      }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    }
+      setMessages((prev) => [...prev, userMessage])
+      setIsLoading(true)
+      setCurrentStatus('')
 
-    setMessages(prev => [...prev, userMessage])
-    const currentInput = input
-    setInput('')
-    setIsLoading(true)
-    setCurrentStatus('') // Reset le statut
+      // Create placeholder for assistant message
+      const assistantMessageId = (Date.now() + 1).toString()
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, assistantMessage])
 
-    // Create placeholder for assistant message
-    const assistantMessageId = (Date.now() + 1).toString()
-    const assistantMessage: Message = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-    }
-    setMessages(prev => [...prev, assistantMessage])
-
-    try {
       let accumulatedContent = ''
 
-      await api.conversation.sendMessageStream(
-        token,
-        userId,
-        currentInput,
-        conversationId?.toString(),
-        // onChunk - append text as it arrives
-        (chunk: string) => {
-          // Dès que le premier chunk arrive, effacer le message de statut
-          if (accumulatedContent === '') {
-            setCurrentStatus('')
-          }
-          accumulatedContent += chunk
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: accumulatedContent }
-                : msg
-            )
-          )
-        },
-        // onStatus - affiche les messages de progression
-        (status: string) => {
-          console.log('Status:', status)
-          setCurrentStatus(status)
-        },
-        // onError
-        (error: string) => {
-          console.error('Stream error:', error)
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: error || 'Une erreur est survenue.' }
-                : msg
-            )
-          )
-        },
-        // onComplete
-        () => {
-          console.log('Stream complete')
-          setIsLoading(false)
-          // Invalider le cache des conversations pour mettre à jour la sidebar
-          console.log('Invalidating conversation history cache...')
-          queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
-        },
-        // onConversationId - récupérer l'ID de la conversation créée/utilisée
-        (convId: number) => {
-          console.log('Received conversation_id:', convId)
-          setConversationId(convId)
-        }
-      )
-
-    } catch (error) {
-      console.error('Error sending message:', error)
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === assistantMessageId
-            ? { ...msg, content: 'Une erreur est survenue. Veuillez réessayer.' }
-            : msg
-        )
-      )
-      // Invalider le cache même en cas d'erreur
-      queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-
-  const handleQuestionClick = (question: string) => {
-    setInput(question)
-    // Auto-send the question
-    setTimeout(() => {
-      if (!isLoading && token && userId) {
-        const userMessage: Message = {
-          id: Date.now().toString(),
-          role: 'user',
-          content: question,
-          timestamp: new Date(),
-        }
-
-        setMessages(prev => [...prev, userMessage])
-        setInput('')
-        setIsLoading(true)
-        setCurrentStatus('') // Reset le statut
-
-        // Create placeholder for assistant message
-        const assistantMessageId = (Date.now() + 1).toString()
-        const assistantMessage: Message = {
-          id: assistantMessageId,
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-        }
-        setMessages(prev => [...prev, assistantMessage])
-
-        let accumulatedContent = ''
-
-        api.conversation.sendMessageStream(
+      try {
+        await api.conversation.sendMessageStream(
           token,
           userId,
-          question,
+          messageContent,
           conversationId?.toString(),
+          // onChunk - append text as it arrives
           (chunk: string) => {
-            // Dès que le premier chunk arrive, effacer le message de statut
             if (accumulatedContent === '') {
               setCurrentStatus('')
             }
             accumulatedContent += chunk
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === assistantMessageId
-                  ? { ...msg, content: accumulatedContent }
-                  : msg
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId ? { ...msg, content: accumulatedContent } : msg
               )
             )
           },
+          // onStatus - display progress messages
           (status: string) => {
-            console.log('Status:', status)
+            logger.log('Status:', status)
             setCurrentStatus(status)
           },
+          // onError
           (error: string) => {
-            console.error('Stream error:', error)
-            setMessages(prev =>
-              prev.map(msg =>
+            logger.error('Stream error:', error)
+            setMessages((prev) =>
+              prev.map((msg) =>
                 msg.id === assistantMessageId
                   ? { ...msg, content: error || 'Une erreur est survenue.' }
                   : msg
               )
             )
           },
+          // onComplete
           () => {
-            console.log('Stream complete')
+            logger.log('Stream complete')
             setIsLoading(false)
+            logger.log('Invalidating conversation history cache...')
             queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
           },
+          // onConversationId - capture conversation ID
           (convId: number) => {
-            console.log('Received conversation_id:', convId)
+            logger.log('Received conversation_id:', convId)
             setConversationId(convId)
           }
-        ).catch(error => {
-          console.error('Error sending message:', error)
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === assistantMessageId
-                ? { ...msg, content: 'Une erreur est survenue. Veuillez réessayer.' }
-                : msg
-            )
+        )
+      } catch (error) {
+        logger.error('Error sending message:', error)
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: 'Une erreur est survenue. Veuillez réessayer.' }
+              : msg
           )
-          queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
-          setIsLoading(false)
-        })
+        )
+        queryClient.invalidateQueries({ queryKey: ['conversationHistory', userId] })
+      } finally {
+        setIsLoading(false)
       }
-    }, 100)
-  }
+    },
+    [token, userId, isLoading, conversationId, queryClient]
+  )
+
+  const handleSend = useCallback(async () => {
+    if (!input.trim()) return
+    const currentInput = input
+    setInput('')
+    await sendMessage(currentInput)
+  }, [input, sendMessage])
+
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        handleSend()
+      }
+    },
+    [handleSend]
+  )
+
+  const handleQuestionClick = useCallback(
+    (question: string) => {
+      setInput(question)
+      // Auto-send the question after a brief delay
+      setTimeout(() => {
+        if (!isLoading && token && userId) {
+          sendMessage(question)
+        }
+      }, 100)
+    },
+    [isLoading, token, userId, sendMessage]
+  )
 
   return (
     <div className="flex-1 flex flex-col w-full h-full">
-
-        {/* Chat content */}
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 pt-2">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 pt-2">
         {messages.length === 0 ? (
           <SuggestedQuestions onQuestionClick={handleQuestionClick} />
         ) : (
@@ -306,17 +236,23 @@ const ChatPage = () => {
                   exit={{ opacity: 0 }}
                   transition={{
                     duration: 0.3,
-                    delay: index * 0.03
+                    delay: index * 0.03,
                   }}
                   className="group"
                 >
-                  <div className={`flex items-start gap-3 ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div
+                    className={`flex items-start gap-3 ${
+                      message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                    }`}
+                  >
                     {/* Avatar */}
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
-                      message.role === 'user'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}>
+                    <div
+                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        message.role === 'user'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
                       {message.role === 'user' ? 'V' : 'H'}
                     </div>
 
@@ -341,51 +277,47 @@ const ChatPage = () => {
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-700">
                   H
                 </div>
-                {currentStatus ? (
-                  <StatusMessage message={currentStatus} />
-                ) : (
-                  <TypingIndicator />
-                )}
+                {currentStatus ? <StatusMessage message={currentStatus} /> : <TypingIndicator />}
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
         )}
-        </div>
+      </div>
 
-        {/* Input Area */}
-        <div className="px-4 py-4 pb-safe">
-          <div className="max-w-3xl mx-auto">
-            <div className="relative flex items-end">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Posez votre question..."
-                rows={1}
-                className="flex-1 px-4 py-3.5 pr-14 rounded-2xl border border-gray-300 focus:outline-none focus:border-purple-400 resize-none transition-all duration-200 bg-white shadow-md"
-                style={{ minHeight: '52px', maxHeight: '120px' }}
-              />
-              <motion.button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`absolute right-2 bottom-2 flex items-center justify-center w-9 h-9 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                  input.trim() && !isLoading
-                    ? 'bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                    : 'bg-gray-800 hover:bg-gray-900'
-                }`}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </motion.button>
-            </div>
+      {/* Input Area */}
+      <div className="px-4 py-4 pb-safe">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative flex items-end">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Posez votre question..."
+              rows={1}
+              className="flex-1 px-4 py-3.5 pr-14 rounded-2xl border border-gray-300 focus:outline-none focus:border-purple-400 resize-none transition-all duration-200 bg-white shadow-md"
+              style={{ minHeight: '52px', maxHeight: '120px' }}
+            />
+            <motion.button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`absolute right-2 bottom-2 flex items-center justify-center w-9 h-9 text-white rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                input.trim() && !isLoading
+                  ? 'bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
+                  : 'bg-gray-800 hover:bg-gray-900'
+              }`}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </motion.button>
           </div>
         </div>
+      </div>
     </div>
   )
 }

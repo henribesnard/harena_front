@@ -66,7 +66,11 @@ const MetricsBar = ({ onMenuClick }: MetricsBarProps) => {
   }
 
   return (
-    <div className="sticky top-0 bg-white border-b border-gray-200 z-40">
+    <div
+      className="sticky top-0 bg-white border-b border-gray-200 z-40"
+      role="region"
+      aria-label="Métriques financières"
+    >
       <div className="w-full overflow-x-auto scrollbar-hide">
         {/* Desktop: all metrics visible, Mobile: horizontal scroll */}
         <div className="flex items-center justify-between py-2 px-4 min-w-max">

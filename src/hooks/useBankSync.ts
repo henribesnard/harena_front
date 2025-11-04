@@ -5,8 +5,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { bankSyncApiService } from '@/services/api/bankSyncApi'
 import { SyncProgress } from '@/types/banking'
+import { ApiError } from '@/types/api'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { logger } from '@/utils/logger'
 
 export const useBankSync = () => {
   const queryClient = useQueryClient()
@@ -38,7 +40,7 @@ export const useBankSync = () => {
   const refreshSync = useMutation({
     mutationFn: bankSyncApiService.refreshSync,
     onMutate: () => {
-      console.log('🔄 Démarrage de la synchronisation...')
+      logger.log('🔄 Démarrage de la synchronisation...')
       setSyncProgress({
         isOpen: true,
         status: 'syncing',
@@ -46,7 +48,7 @@ export const useBankSync = () => {
       })
     },
     onSuccess: (data) => {
-      console.log('✅ Synchronisation terminée:', data)
+      logger.log('✅ Synchronisation terminée:', data)
 
       // Vérifier si c'est un warning (aucun item trouvé)
       if (data.status === 'warning') {
@@ -75,7 +77,7 @@ export const useBankSync = () => {
       // Invalider les queries pour rafraîchir les données
       // Utiliser un timeout pour laisser le temps au backend de terminer
       setTimeout(() => {
-        console.log('🔄 Rafraîchissement des données...')
+        logger.log('🔄 Rafraîchissement des données...')
         queryClient.invalidateQueries({ queryKey: ['sync-status'] })
         queryClient.invalidateQueries({ queryKey: ['bank-items'] })
         queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
@@ -89,8 +91,8 @@ export const useBankSync = () => {
         setSyncProgress((prev) => ({ ...prev, isOpen: false }))
       }, 3000)
     },
-    onError: (error: any) => {
-      console.error('❌ Erreur lors de la synchronisation:', error)
+    onError: (error: ApiError) => {
+      logger.error('❌ Erreur lors de la synchronisation:', error)
 
       const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Erreur lors de la synchronisation'
 
