@@ -21,7 +21,7 @@ const ChatPage = () => {
   const token = useAuthStore((state) => state.token)
   const userId = useAuthStore((state) => state.user?.id)
   const queryClient = useQueryClient()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -41,13 +41,25 @@ const ChatPage = () => {
   // Load conversation from URL query parameter
   useEffect(() => {
     const conversationParam = searchParams.get('conversation')
+
+    if (conversationParam === 'new') {
+      handleNewConversation()
+
+      // Clean the URL so we do not stay stuck on the `conversation=new` flag
+      const updatedParams = new URLSearchParams(searchParams)
+      updatedParams.delete('conversation')
+      updatedParams.delete('ts')
+      setSearchParams(updatedParams, { replace: true })
+      return
+    }
+
     if (conversationParam) {
       const convId = parseInt(conversationParam, 10)
       if (!isNaN(convId) && convId !== conversationId) {
         handleSelectConversation(convId)
       }
     }
-  }, [searchParams])
+  }, [searchParams, setSearchParams])
 
   const handleNewConversation = () => {
     setMessages([])

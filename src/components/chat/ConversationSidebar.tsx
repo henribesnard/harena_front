@@ -32,7 +32,10 @@ const ConversationSidebar = ({
     if (onNewConversation) {
       onNewConversation()
     } else {
-      navigate('/chat')
+      const params = new URLSearchParams()
+      params.set('conversation', 'new')
+      params.set('ts', Date.now().toString())
+      navigate(`/chat?${params.toString()}`)
     }
   }
 
