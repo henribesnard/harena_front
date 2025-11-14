@@ -1,5 +1,11 @@
 /**
- * Hook pour gérer la connexion Bridge et la création de session Connect
+ * Hook pour gérer l'expérience complète de connexion bancaire via Bridge.
+ *
+ * Étapes gérées automatiquement :
+ * 1. Création/validation de la connexion Bridge côté user_service
+ * 2. Création de la session Bridge Connect puis ouverture d'une popup
+ * 3. Détection de la fermeture de la popup pour lancer la synchronisation initiale
+ * 4. Rafraîchissement du cache React Query et lancement facultatif de l'enrichissement
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -16,7 +22,6 @@ export const useBankConnection = () => {
     mutationFn: bankSyncApiService.connectBridge,
     onSuccess: () => {
       console.log('✅ Connexion Bridge créée avec succès')
-      // Ne pas afficher de toast ici, car c'est une étape intermédiaire
     },
     onError: (error: any) => {
       console.error('❌ Erreur lors de la connexion Bridge:', error)
@@ -37,23 +42,60 @@ export const useBankConnection = () => {
   })
 
   /**
-   * Fonction pour lancer le processus complet de connexion
-   * 1. Créer la connexion Bridge (si nécessaire)
-   * 2. Créer la session Connect
-   * 3. Ouvrir l'URL Bridge dans une popup
+   * Lance automatiquement la synchronisation complète après la connexion Bridge.
+   * Retourne true si la synchronisation a bien démarré (items créés), false sinon.
+   */
+  const triggerAutomaticSync = async (): Promise<boolean> => {
+    const loadingToastId = toast.loading('Lancement de la synchronisation bancaire...')
+    try {
+      const syncResponse = await bankSyncApiService.refreshSync()
+      toast.dismiss(loadingToastId)
+
+      if (syncResponse.status === 'warning') {
+        const message = syncResponse.message || 'Bridge ne renvoie aucun compte pour le moment.'
+        toast.error(message)
+        return false
+      }
+
+      const itemsCount = syncResponse.items_count ?? 0
+      const successLabel =
+        itemsCount > 0
+          ? `Synchronisation démarrée pour ${itemsCount} connexion${itemsCount > 1 ? 's' : ''}`
+          : 'Synchronisation bancaire démarrée'
+
+      toast.success(successLabel)
+      return true
+    } catch (error: any) {
+      toast.dismiss(loadingToastId)
+      const fallbackMessage = 'Impossible de synchroniser vos comptes pour le moment.'
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        fallbackMessage
+
+      if (error.response?.status === 428) {
+        toast.error('Connectez d’abord une banque via Bridge avant de lancer la synchronisation.')
+      } else {
+        toast.error(errorMessage)
+      }
+
+      console.error('Erreur lors de la synchronisation automatique:', error)
+      return false
+    }
+  }
+
+  /**
+   * Démarre le processus complet de connexion bancaire.
    */
   const initiateBankConnection = async (callbackUrl?: string) => {
     try {
       console.log('🚀 Initialisation de la connexion bancaire...')
 
-      // Étape 1 : Créer la connexion Bridge
-      // Note: Cette étape peut échouer si l'utilisateur a déjà une connexion Bridge
-      // Dans ce cas, on ignore l'erreur et on continue avec la session
+      // Étape 1 : créer la connexion Bridge si nécessaire
       try {
         await connectBridge.mutateAsync()
         console.log('✅ Connexion Bridge créée')
       } catch (error: any) {
-        // Si l'erreur indique que l'utilisateur a déjà une connexion, on continue
         if (error.response?.status === 400 || error.response?.status === 409) {
           console.log('ℹ️ Connexion Bridge déjà existante, on continue...')
         } else {
@@ -61,12 +103,12 @@ export const useBankConnection = () => {
         }
       }
 
-      // Étape 2 : Créer la session Connect
+      // Étape 2 : créer la session Connect
       console.log('🔗 Création de la session Connect...')
       const session = await createConnectSession.mutateAsync({ callbackUrl })
       console.log('✅ Session Connect créée:', session.session_id)
 
-      // Étape 3 : Ouvrir l'URL dans une popup
+      // Étape 3 : ouvrir l’URL Bridge dans une popup
       const width = 600
       const height = 700
       const left = window.screen.width / 2 - width / 2
@@ -80,45 +122,50 @@ export const useBankConnection = () => {
       )
 
       if (!popup) {
-        toast.error('Impossible d\'ouvrir la popup. Vérifiez les paramètres de votre navigateur.')
+        toast.error("Impossible d'ouvrir la popup. Vérifiez les paramètres de votre navigateur.")
         return null
       }
 
       toast.success('Popup Bridge ouverte. Suivez les instructions pour connecter votre banque.')
 
-      // Écouter la fermeture de la popup pour rafraîchir les données et enrichir
-      const popupCheckInterval = setInterval(() => {
+      const handlePopupClosed = async () => {
+        console.log('🧹 Popup fermée, démarrage de la synchronisation automatique...')
+        const syncStarted = await triggerAutomaticSync()
+
+        // Rafraîchir les données locales après la création des items et comptes
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+          queryClient.invalidateQueries({ queryKey: ['bank-items'] })
+          queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
+          queryClient.invalidateQueries({ queryKey: ['bank-transactions'] })
+        }, syncStarted ? 2000 : 500)
+
+        // Lancer l'enrichissement uniquement si la synchronisation s'est bien lancée
+        if (syncStarted && user?.id) {
+          setTimeout(async () => {
+            try {
+              console.log("🔁 Démarrage de l'enrichissement automatique vers Elasticsearch...")
+              await bankSyncApiService.syncUserToElasticsearch(user.id)
+              console.log('✅ Enrichissement vers Elasticsearch terminé')
+              toast.success('Vos transactions ont été enrichies et synchronisées')
+            } catch (error: any) {
+              console.error("❌ Erreur lors de l'enrichissement:", error)
+              // Pas d'alerte utilisateur : processus arrière-plan
+            }
+          }, 3000)
+        }
+      }
+
+      const popupCheckInterval = window.setInterval(() => {
         if (popup.closed) {
           clearInterval(popupCheckInterval)
-          console.log('🔄 Popup fermée, rafraîchissement des données...')
-
-          // Invalider les queries pour rafraîchir les données
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ['bank-items'] })
-            queryClient.invalidateQueries({ queryKey: ['sync-status'] })
-          }, 1000)
-
-          // Lancer l'enrichissement automatique vers Elasticsearch
-          if (user?.id) {
-            setTimeout(async () => {
-              try {
-                console.log('🔍 Démarrage de l\'enrichissement automatique vers Elasticsearch...')
-                await bankSyncApiService.syncUserToElasticsearch(user.id)
-                console.log('✅ Enrichissement vers Elasticsearch terminé')
-                toast.success('Vos transactions ont été enrichies et synchronisées')
-              } catch (error: any) {
-                console.error('❌ Erreur lors de l\'enrichissement:', error)
-                // Ne pas afficher d'erreur à l'utilisateur car c'est un processus en arrière-plan
-                // L'enrichissement pourra être relancé plus tard si nécessaire
-              }
-            }, 3000) // Attendre 3 secondes que les transactions soient bien enregistrées
-          }
+          void handlePopupClosed()
         }
       }, 1000)
 
       return session
     } catch (error) {
-      console.error('❌ Erreur lors de l\'initialisation de la connexion:', error)
+      console.error("❌ Erreur lors de l'initialisation de la connexion:", error)
       throw error
     }
   }

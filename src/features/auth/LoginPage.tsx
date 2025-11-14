@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { LogIn, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
@@ -10,6 +10,10 @@ const LoginPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+
+  useEffect(() => {
+    clearError()
+  }, [clearError])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()

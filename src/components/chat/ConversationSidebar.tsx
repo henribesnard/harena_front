@@ -1,4 +1,4 @@
-import { MessageSquare, Plus, Loader2, Clock, LogOut, ChevronDown, LayoutDashboard, Settings } from 'lucide-react'
+import { MessageSquare, Plus, Loader2, Clock, LogOut, ChevronDown, Settings } from 'lucide-react'
 import { useConversationHistory, ConversationHistoryItem } from '../../hooks/useConversationHistory'
 import { useAuthStore } from '../../stores/authStore'
 import { formatDistanceToNow } from 'date-fns'
@@ -178,16 +178,6 @@ const ConversationSidebar = ({
         {/* User Dropdown */}
         {dropdownOpen && (
           <div className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-            <button
-              onClick={() => {
-                navigate('/user-dashboard')
-                setDropdownOpen(false)
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Tableau de bord</span>
-            </button>
             <button
               onClick={() => {
                 navigate('/configuration')

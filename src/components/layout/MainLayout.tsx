@@ -8,7 +8,9 @@ const MainLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MetricsBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <div className="lg:ml-64">
+        <MetricsBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      </div>
 
       <div className="flex h-full">
         <ConversationSidebar

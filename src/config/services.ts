@@ -44,6 +44,10 @@ export const SERVICES = {
     baseURL: import.meta.env.VITE_ENRICHMENT_SERVICE_URL || 'http://localhost:3005',
     apiV1: '/api/v1',
   },
+  DASHBOARD: {
+    baseURL: import.meta.env.VITE_DASHBOARD_SERVICE_URL || 'http://localhost:3010',
+    apiV1: '/api/v1',
+  },
 } as const satisfies Record<string, ServiceConfig>
 
 // Helper pour construire une URL complète
